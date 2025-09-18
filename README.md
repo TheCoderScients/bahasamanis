@@ -1,8 +1,29 @@
 # Bahasa Manis (BM)
 
+[![PyPI version](https://img.shields.io/pypi/v/bahasamanis.svg)](https://pypi.org/project/bahasamanis/)
+
 Bahasa pemrograman berbahasa Indonesia dengan interpreter, transpiler, CLI, dan playground web.
 
-## Instalasi (lokal)
+PyPI: https://pypi.org/project/bahasamanis/
+
+## Instalasi
+
+Disarankan menggunakan pipx (CLI terisolasi dan langsung tersedia di PATH):
+
+```
+pipx ensurepath
+pipx install bahasamanis
+```
+
+Alternatif (pip + virtualenv):
+
+```
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1   # Windows PowerShell
+pip install bahasamanis
+```
+
+Instalasi dari sumber (pengembangan):
 
 ```
 pip install -e .
@@ -20,12 +41,18 @@ python server.py
 # buka http://127.0.0.1:5000
 ```
 
-## Contoh
+## Quickstart
 
 ```
 cetak "Masukkan nama:"
 baca nama
 cetak "Halo, {nama}!"
+```
+
+Jalankan:
+
+```
+bm run hello.bm
 ```
 
 ## Fitur Bahasa Singkat

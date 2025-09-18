@@ -2,6 +2,8 @@
 
 Sintaks highlight + snippet untuk bahasa pemrograman Bahasa Manis (.bm).
 
+CLI Bahasa Manis tersedia di PyPI: https://pypi.org/project/bahasamanis/
+
 ## Fitur
 - Highlight keyword BM (`cetak`, `baca`, `jika/elif/lain/akhir`, `selama`, `untuk`, `fungsi`, dll.)
 - Highlight string/angka/komentar
@@ -12,6 +14,13 @@ Sintaks highlight + snippet untuk bahasa pemrograman Bahasa Manis (.bm).
 - Install lokal dari file VSIX:
   1. Jalankan `vsce package` di folder `vscode-bahasamanis/`
   2. Di VS Code: Extensions → menu `...` → `Install from VSIX...`
+
+CLI (opsional) — instal dari PyPI agar perintah `bm` tersedia:
+
+```
+pipx ensurepath
+pipx install bahasamanis
+```
 
 ## Cara Pakai
 - Buka file berekstensi `.bm`
@@ -24,5 +33,8 @@ Ikon di `images/icon.png`.
 
 ## Sumber Proyek
 Bahasa Manis (BM): interpreter, transpiler, CLI, dan playground web.
+
+PyPI: https://pypi.org/project/bahasamanis/
+Repo: https://github.com/TheCoderScients/bahasamanis
 
 Lisensi: MIT
