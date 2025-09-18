@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "bahasamanis"
-version = "0.1.6"
+version = "0.1.7"
 description = "Bahasa Manis (BM): Bahasa pemrograman berbahasa Indonesia dengan interpreter, transpiler, dan playground."
 readme = "README.md"
 authors = [
