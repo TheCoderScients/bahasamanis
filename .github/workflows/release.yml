@@ -63,11 +63,24 @@ jobs:
       - name: Install PyInstaller
         run: |
           python -m pip install --upgrade pip
-          pip install pyinstaller
+          pip install pyinstaller pillow
+
+      - name: Prepare icon (.ico)
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path assets | Out-Null
+          python - << 'PY'
+          from PIL import Image
+          src = 'vscode-bahasamanis/images/icon.png'
+          dst = 'assets/bm.ico'
+          im = Image.open(src).convert('RGBA')
+          im.save(dst, sizes=[(256,256),(128,128),(64,64),(32,32),(16,16)])
+          print('Saved', dst)
+          PY
 
       - name: Build single-file exe
         run: |
-          pyinstaller --onefile --name=bm bahasamanis_cli.py
+          pyinstaller --onefile --name=bm --icon=assets\\bm.ico bahasamanis_cli.py
 
       - name: Upload artifact to Release
         uses: softprops/action-gh-release@v1

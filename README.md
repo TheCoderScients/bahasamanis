@@ -1,5 +1,9 @@
 # Bahasa Manis (BM)
 
+<p align="center">
+  <img src="https://raw.githubusercontent.com/TheCoderScients/bahasamanis/main/vscode-bahasamanis/images/icon.png" alt="Bahasa Manis icon" width="128" />
+</p>
+
 [![PyPI version](https://img.shields.io/pypi/v/bahasamanis.svg)](https://pypi.org/project/bahasamanis/)
 
 Bahasa pemrograman berbahasa Indonesia dengan interpreter, transpiler, CLI, dan playground web.
