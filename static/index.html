@@ -1,0 +1,468 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>BahasaManis Playground</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/htm/mini/index.js"></script>
+  <style>
+    html, body { height: 100%; }
+    body { background: #0f172a; color: #e6edf3; font-family: 'Fira Code', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace; }
+    .pane { min-width: 220px; }
+    .divider { width: 6px; cursor: col-resize; }
+    .divider:hover { background-color: rgba(148,163,184,0.25); }
+    @media (max-width: 768px){
+      .divider { height: 6px; width: 100%; cursor: row-resize; }
+    }
+  </style>
+</head>
+<body class="p-4">
+  <div id="root" class="max-w-4xl mx-auto"></div>
+
+  <script>
+    const html = htm.bind(React.createElement);
+
+    function App(){
+      const codeRef = React.useRef(null);
+      const termRef = React.useRef(null);
+      const containerRef = React.useRef(null);
+      const leftRef = React.useRef(null);
+      const rightRef = React.useRef(null);
+      const dividerRef = React.useRef(null);
+      const [output, setOutput] = React.useState("");
+      const [compact, setCompact] = React.useState(true);
+      const [running, setRunning] = React.useState(false);
+      const [leftPct, setLeftPct] = React.useState(58); // editor width percentage
+      const defaultCode = '# Contoh:\n cetak "Masukkan nama:"\n baca nama\n cetak "Halo, {nama}!"';
+
+      function parseCodeAndInputs(text){
+        const lines = text.split(/\r?\n/);
+        const idx = lines.findIndex(l => l.trim().toUpperCase() === '# INPUT:' || l.trim().toUpperCase() === '// INPUT:' || l.trim().toUpperCase() === 'INPUT:');
+        if (idx === -1) return { code: text, inputs: [] };
+        const codePart = lines.slice(0, idx).join('\n');
+        const inputsPart = lines.slice(idx+1);
+        const inputs = inputsPart.map(s => s.trim()).filter(s => s.length>0);
+        return { code: codePart, inputs };
+      }
+
+      // Keyboard shortcuts
+      React.useEffect(() => {
+        function onKey(e){
+          const isMac = navigator.platform.toUpperCase().indexOf('MAC')>=0;
+          const mod = isMac ? e.metaKey : e.ctrlKey;
+          if (mod && e.key === 'Enter') { e.preventDefault(); runCode(); }
+          if (mod && e.shiftKey && (e.key==='T' || e.key==='t')) { e.preventDefault(); transpile(); }
+          if (mod && e.shiftKey && (e.key==='R' || e.key==='r')) { e.preventDefault(); if(codeRef.current){ codeRef.current.value = defaultCode; setOutput(''); } }
+        }
+        window.addEventListener('keydown', onKey);
+        return () => window.removeEventListener('keydown', onKey);
+      }, []);
+
+      // Draggable divider
+      React.useEffect(() => {
+        const divider = dividerRef.current;
+        const container = containerRef.current;
+        if (!divider || !container) return;
+        let dragging = false;
+        function onDown(e){ dragging = true; document.body.style.userSelect='none'; }
+        function onMove(e){
+          if (!dragging) return;
+          const rect = container.getBoundingClientRect();
+          const isMobile = window.innerWidth <= 768;
+          if (!isMobile){
+            const x = e.clientX - rect.left;
+            const pct = Math.min(80, Math.max(25, (x/rect.width)*100));
+            setLeftPct(pct);
+            if (leftRef.current) leftRef.current.style.flexBasis = pct+'%';
+          } else {
+            const y = e.clientY - rect.top;
+            const pct = Math.min(75, Math.max(30, (y/rect.height)*100));
+            if (leftRef.current) leftRef.current.style.flexBasis = pct+'%';
+          }
+        }
+        function onUp(){ dragging=false; document.body.style.userSelect=''; }
+        divider.addEventListener('mousedown', onDown);
+        window.addEventListener('mousemove', onMove);
+        window.addEventListener('mouseup', onUp);
+        // touch
+        divider.addEventListener('touchstart', (e)=>{onDown(e.touches[0]);});
+        window.addEventListener('touchmove', (e)=>{onMove(e.touches[0]);});
+        window.addEventListener('touchend', onUp);
+        // init
+        if (leftRef.current) leftRef.current.style.flexBasis = leftPct+'%';
+        return () => {
+          divider.removeEventListener('mousedown', onDown);
+          window.removeEventListener('mousemove', onMove);
+          window.removeEventListener('mouseup', onUp);
+          window.removeEventListener('touchmove', (e)=>{onMove(e.touches[0]);});
+          window.removeEventListener('touchend', onUp);
+        }
+      }, [leftPct]);
+
+      function countReads(text){
+        // very simple heuristic: count lines that start with 'baca '
+        return (text.match(/^\s*baca\s+.+$/gmi) || []).length;
+      }
+
+      function extractOutputsBeforeFirstRead(text){
+        // Collect simple cetak "..." lines from the start until the first 'baca'
+        const lines = text.split(/\r?\n/);
+        const out = [];
+        for (let i=0;i<lines.length;i++){
+          const l = lines[i];
+          if (/^\s*baca\s+.+/i.test(l)) break;
+          const m = l.match(/^\s*cetak\s*(?:\(\s*)?(["'])(.*?)\1\s*\)?\s*$/i);
+          if (m){ out.push(m[2]); }
+        }
+        return out;
+      }
+
+      function extractPromptsForReads(text){
+        // Walk through lines; remember last simple cetak "..." seen;
+        // when encountering 'baca', record that last prompt for this read.
+        const lines = text.split(/\r?\n/);
+        const prompts = [];
+        let lastPrompt = '';
+        for (let i=0;i<lines.length;i++){
+          const l = lines[i];
+          const m = l.match(/^\s*cetak\s*(?:\(\s*)?(["'])(.*?)\1\s*\)?\s*$/i);
+          if (m){ lastPrompt = m[2]; continue; }
+          if (/^\s*baca\s+.+/i.test(l)){
+            prompts.push(lastPrompt);
+            // do not reset lastPrompt so repeated baca can reuse same prompt if code prints once
+            continue;
+          }
+        }
+        return prompts;
+      }
+
+      function detectReadUntilZero(text){
+        // Scan all baca variables, choose the one that is checked against 0 and followed by 'henti'
+        const re = /\bbaca\s+([A-Za-z_][A-Za-z0-9_]*)/gi;
+        const hasHenti = /\bhenti\b/i.test(text);
+        if (!hasHenti) return null;
+        let m;
+        while ((m = re.exec(text))){
+          const v = m[1];
+          const hasCheck = new RegExp(`jika\\s+int\\(\\s*${v}\\s*\\)\\s*==\\s*0\\s*maka`, 'i').test(text);
+          if (hasCheck) return v;
+        }
+        return null;
+      }
+
+      function findSentinelIndex(text, varName){
+        // Return the index (0-based) of the 'baca varName' that belongs to the sentinel loop
+        if (!varName) return -1;
+        const regex = /\bbaca\s+([A-Za-z_][A-Za-z0-9_]*)/gi;
+        let match, idx = 0;
+        while ((match = regex.exec(text))){
+          const v = match[1];
+          if (v.toLowerCase() === varName.toLowerCase()) return idx;
+          idx++;
+        }
+        return -1;
+      }
+
+      function enterInteractiveCollect(k, promptsForReads, prefaceOutputs, stopValueForLast, append=false){
+        // Wait for terminal element to mount in the DOM
+        const nextFrame = () => new Promise(res => requestAnimationFrame(res));
+        const ensureMounted = async () => {
+          if (!termRef.current) await nextFrame();
+          if (!termRef.current) await nextFrame();
+          return termRef.current;
+        };
+        return (async () => {
+          const term = await ensureMounted();
+          if (!term) return [];
+          // Build structure: history pre + current prompt line; we will advance per read using promptsForReads[i]
+          const prompts = Array.isArray(promptsForReads) ? promptsForReads.slice() : [];
+          const prevPrompts = Array.isArray(prefaceOutputs) ? prefaceOutputs.join('\n') : '';
+          let pre = term.querySelector('pre');
+          if (!append){
+            term.innerHTML = '';
+            if (prevPrompts){
+              pre = document.createElement('pre');
+              pre.className = 'whitespace-pre-wrap text-sm';
+              pre.textContent = prevPrompts + '\n';
+              pre.setAttribute('contenteditable', 'false');
+              term.appendChild(pre);
+            } else {
+              pre = document.createElement('pre');
+              pre.className = 'whitespace-pre-wrap text-sm';
+              pre.setAttribute('contenteditable', 'false');
+              term.appendChild(pre);
+            }
+          }
+          const line = document.createElement('div');
+          line.className = 'text-sm whitespace-pre-wrap';
+          const promptSpan = document.createElement('span');
+          promptSpan.textContent = (prompts[0] || '');
+          const edit = document.createElement('span');
+          edit.className = 'outline-none';
+          edit.setAttribute('contenteditable', 'true');
+          edit.setAttribute('tabindex', '0');
+          line.appendChild(promptSpan);
+          line.appendChild(edit);
+          term.appendChild(line);
+          edit.focus();
+
+          let idx = 0;
+          const collected = [];
+          return await new Promise(resolve => {
+            function onKeyDown(e){
+              if (e.key === 'Enter'){
+                e.preventDefault();
+                const value = edit.textContent.trim();
+                // Move current line (prompt + value) into a <pre> block and start a new inline line if more inputs are needed
+                const existingPre = term.querySelector('pre');
+                const currentPrompt = prompts[Math.min(idx, Math.max(0, prompts.length-1))] || '';
+                const combinedLine = currentPrompt + value + '\n';
+                if (existingPre){ existingPre.textContent += combinedLine; }
+                else {
+                  const pre = document.createElement('pre');
+                  pre.className = 'whitespace-pre-wrap text-sm';
+                  pre.textContent = combinedLine;
+                  pre.setAttribute('contenteditable', 'false');
+                  term.insertBefore(pre, line);
+                }
+                edit.textContent = '';
+                collected.push(value);
+                idx++;
+                const fixedDone = collected.length >= k;
+                if (fixedDone && stopValueForLast){
+                  // keep collecting using last prompt until value equals stopValueForLast
+                  if (value === stopValueForLast){
+                    cleanup();
+                    edit.setAttribute('contenteditable', 'false');
+                    resolve(collected);
+                  } else {
+                    // stay on same prompt
+                    promptSpan.textContent = prompts[Math.max(0, prompts.length-1)] || '';
+                  }
+                } else if (fixedDone && !stopValueForLast){
+                  cleanup();
+                  edit.setAttribute('contenteditable', 'false');
+                  resolve(collected);
+                } else {
+                  // advance prompt text for next read
+                  promptSpan.textContent = prompts[idx] || '';
+                }
+              }
+            }
+            function onBeforeInput(e){ /* allow normal typing; disallow paste formatting */ }
+            function cleanup(){
+              edit.removeEventListener('keydown', onKeyDown);
+              edit.removeEventListener('beforeinput', onBeforeInput);
+            }
+            edit.addEventListener('keydown', onKeyDown);
+            edit.addEventListener('beforeinput', onBeforeInput);
+          });
+        })();
+      }
+
+      async function runCode(){
+        setRunning(true);
+        setOutput('...menjalankan...');
+        try{
+          const raw = codeRef.current ? codeRef.current.value : '';
+          const parsed = parseCodeAndInputs(raw);
+          let code = parsed.code;
+          let inputsArray = parsed.inputs;
+          if (inputsArray.length === 0){
+            // No # INPUT: provided, try interactive collection based on baca count
+            let k = countReads(code);
+            if (k > 0){
+              // Show interactive terminal to collect k inputs
+              setOutput('');
+              const prompts = extractPromptsForReads(code);
+              let preface = extractOutputsBeforeFirstRead(code);
+              // If the last preface line is exactly the same as the first prompt,
+              // remove it from preface to prevent duplicate display.
+              if (preface.length && prompts.length && preface[preface.length-1] === prompts[0]){
+                preface = preface.slice(0, -1);
+              }
+              // Detect sentinel read-until-zero pattern and its index
+              const sentinelVar = detectReadUntilZero(code);
+              if (sentinelVar){
+                const idxSent = findSentinelIndex(code, sentinelVar);
+                const beforeCount = Math.max(0, idxSent);
+                const promptsBefore = prompts.slice(0, beforeCount);
+                const promptSentinel = prompts.slice(idxSent, idxSent+1);
+                const promptsAfter = prompts.slice(idxSent+1);
+                // collect before (fixed)
+                let collectedAll = [];
+                if (promptsBefore.length){
+                  // Dedupe: if preface already ends with the same text as the first prompt, drop it from preface
+                  if (preface && preface.length && preface[preface.length-1] === promptsBefore[0]){
+                    preface = preface.slice(0, -1);
+                  }
+                  const part = await enterInteractiveCollect(beforeCount, promptsBefore, preface, null, false);
+                  collectedAll = collectedAll.concat(part);
+                  // after first phase, no more preface
+                  preface = null;
+                } else {
+                  // no fixed before; still need to mount terminal to show preface
+                  await enterInteractiveCollect(0, [], preface, null, false);
+                  preface = null;
+                }
+                // collect sentinel (until '0')
+                const part2 = await enterInteractiveCollect(1, promptSentinel, null, '0', true);
+                collectedAll = collectedAll.concat(part2);
+                // collect after (fixed)
+                if (promptsAfter.length){
+                  const part3 = await enterInteractiveCollect(promptsAfter.length, promptsAfter, null, null, true);
+                  collectedAll = collectedAll.concat(part3);
+                }
+                inputsArray = collectedAll;
+              } else {
+                const terms = await enterInteractiveCollect(k, prompts, preface, null);
+                inputsArray = terms;
+              }
+            }
+          }
+          const res = await fetch('/run', {
+            method: 'POST', headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({code, inputs: inputsArray})
+          });
+          const j = await res.json();
+          setOutput(j.output || j.error || 'No output');
+        }catch(err){
+          setOutput('Gagal terhubung ke server: '+err.message);
+        }
+        setRunning(false);
+      }
+
+      async function transpile(){
+        try{
+          const raw = codeRef.current ? codeRef.current.value : '';
+          const { code } = parseCodeAndInputs(raw);
+          const res = await fetch('/transpile', {
+            method:'POST', headers:{'Content-Type':'application/json'},
+            body: JSON.stringify({code})
+          });
+          const j = await res.json();
+          const newWin = window.open();
+          newWin.document.write('<pre>'+escapeHtml(j.py)+'</pre>');
+        }catch(e){
+          alert('Gagal: '+e.message)
+        }
+      }
+
+      function escapeHtml(s){
+        return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      }
+
+      function formatOutput(text, isCompact){
+        if (!text) return "";
+        if (!isCompact) return text;
+        const lines = text.split(/\r?\n/);
+        const MAX_LINES = 200;
+        const MAX_LEN = 120;
+        const truncLine = (ln) => ln.length > MAX_LEN ? (ln.slice(0, MAX_LEN) + ' …') : ln;
+        let resLines = lines.map(truncLine);
+        if (resLines.length > MAX_LINES){
+          const head = resLines.slice(0, 60);
+          const tail = resLines.slice(-20);
+          resLines = [...head, '… (dipotong, '+(resLines.length-80)+' baris disembunyikan) …', ...tail];
+        }
+        return resLines.join('\n');
+      }
+
+      return html`
+        <div className="h-screen max-h-screen flex flex-col">
+          <!-- Top Toolbar -->
+          <div className="flex items-center justify-between px-4 py-2 bg-slate-900/70 border-b border-slate-800">
+            <div className="flex items-center gap-3">
+              <div className="text-lg font-bold">BahasaManis</div>
+              <div className="hidden md:block text-xs text-slate-400">Playground • IDE Mode</div>
+            </div>
+            <div className="flex items-center gap-2">
+              <button className="px-3 py-1.5 rounded bg-emerald-500 hover:bg-emerald-600"
+                      onClick=${runCode}
+                      disabled=${running}>
+                ${running? 'Menjalankan...' : 'Jalankan (Ctrl+Enter)'}
+              </button>
+              <button className="px-3 py-1.5 rounded bg-sky-500 hover:bg-sky-600"
+                      onClick=${transpile}>
+                Transpile -> Python (Ctrl+Shift+T)
+              </button>
+              <button className="px-3 py-1.5 rounded bg-slate-700 hover:bg-slate-600"
+                      onClick=${() => { if(codeRef.current) codeRef.current.value = defaultCode; setOutput(''); }}>
+                Reset (Ctrl+Shift+R)
+              </button>
+            </div>
+          </div>
+
+          <!-- Split Pane Area -->
+          <div ref=${containerRef} className="flex-1 min-h-0 flex flex-col md:flex-row">
+            <!-- Left Pane: Editor -->
+            <section ref=${leftRef} className="pane flex flex-col border-b md:border-b-0 md:border-r border-slate-800" style=${{flexBasis: leftPct+'%'}}>
+              <div className="px-4 py-2 text-xs text-slate-400">Kode BahasaManis</div>
+              <div className="flex-1 min-h-0 p-2">
+                <textarea ref=${codeRef}
+                          className="w-full h-full p-3 rounded bg-slate-900 border border-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                          defaultValue=${defaultCode}></textarea>
+              </div>
+            </section>
+
+            <!-- Divider -->
+            <div ref=${dividerRef} className="divider bg-slate-800 md:h-full md:w-[6px] h-[6px] w-full"></div>
+
+            <!-- Right Pane: Output / Terminal -->
+            <section ref=${rightRef} className="pane flex flex-col">
+              <div className="px-4 py-2 flex items-center justify-between border-b border-slate-800">
+                <div className="text-xs text-slate-400">Output</div>
+                ${output ? html`<button className="text-[10px] px-2 py-1 rounded bg-slate-700 hover:bg-slate-600" onClick=${() => setCompact(c => !c)}>${compact ? 'Tampilkan penuh' : 'Ringkas tampilan'}</button>` : null}
+              </div>
+              <div className="flex-1 min-h-0 p-2">
+                ${output
+                  ? html`<pre className="h-full overflow-auto whitespace-pre-wrap text-sm rounded bg-slate-900 border border-slate-800 p-3" style=${{wordBreak:'break-word', overflowWrap:'anywhere'}}>${formatOutput(output, compact)}</pre>`
+                  : html`<div ref=${termRef}
+                             className="h-full overflow-auto whitespace-pre-wrap text-sm rounded bg-slate-900 border border-slate-800 p-3 outline-none"
+                             style=${{caretColor:'#e6edf3'}} contentEditable=${false} tabIndex="0"></div>`}
+              </div>
+              <div className="px-4 py-1 text-[10px] text-slate-500">Tip: Jalankan (Ctrl+Enter) • Transpile (Ctrl+Shift+T) • Reset (Ctrl+Shift+R)</div>
+            </section>
+          </div>
+
+          <!-- Status Bar -->
+          <div className="px-4 py-1 text-[11px] bg-slate-900/70 border-t border-slate-800 text-slate-400 flex items-center justify-between">
+            <div>${running ? 'Status: Running…' : 'Status: Idle'}</div>
+            <div>Font: Fira Code • Theme: Slate</div>
+          </div>
+        </div>
+      `;
+    }
+
+    // Global error handlers to diagnose blank screen
+    window.addEventListener('error', function(e){
+      const r = document.getElementById('root');
+      if (r && r.childElementCount === 0){
+        r.innerHTML = '<div style="color:#fca5a5; font-family:monospace">Runtime error: '+(e.error && e.error.message ? e.error.message : e.message)+'</div>';
+      }
+    });
+    window.addEventListener('unhandledrejection', function(e){
+      const r = document.getElementById('root');
+      if (r && r.childElementCount === 0){
+        const msg = (e.reason && (e.reason.message || e.reason.toString())) || 'Unhandled promise rejection';
+        r.innerHTML = '<div style="color:#fca5a5; font-family:monospace">'+msg+'</div>';
+      }
+    });
+
+    try{
+      ReactDOM.createRoot(document.getElementById('root'))
+        .render(React.createElement(App));
+    }catch(e){
+      const r = document.getElementById('root');
+      if (r){ r.innerHTML = '<div style="color:#fca5a5; font-family:monospace">Mount error: '+e.message+'</div>'; }
+      console.error(e);
+    }
+  </script>
+</body>
+</html>

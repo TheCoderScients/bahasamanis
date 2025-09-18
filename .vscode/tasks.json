@@ -1,0 +1,19 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "BM: Run current file",
+      "type": "shell",
+      "command": "bm run ${file}",
+      "group": "build",
+      "problemMatcher": []
+    },
+    {
+      "label": "BM: Transpile current file",
+      "type": "shell",
+      "command": "bm transpile ${file} -o ${fileDirname}/${fileBasenameNoExtension}.py",
+      "group": "build",
+      "problemMatcher": []
+    }
+  ]
+}

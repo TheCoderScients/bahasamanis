@@ -1,0 +1,23 @@
+# Kalkulator sederhana
+cetak "Masukkan a:"
+baca a
+cetak "Masukkan operator (+, -, *, /): "
+baca op
+cetak "Masukkan b:"
+baca b
+
+jika op == "+" maka
+    cetak "Hasil: {float(a) + float(b)}"
+elif op == "-" maka
+    cetak "Hasil: {float(a) - float(b)}"
+elif op == "*" maka
+    cetak "Hasil: {float(a) * float(b)}"
+elif op == "/" maka
+    jika float(b) == 0 maka
+        cetak "Tak bisa bagi 0"
+    lain
+        cetak "Hasil: {float(a) / float(b)}"
+    akhir
+lain
+    cetak "Operator tidak dikenali"
+akhir

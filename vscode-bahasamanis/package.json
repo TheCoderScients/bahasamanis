@@ -1,0 +1,36 @@
+{
+  "name": "bahasamanis-language",
+  "displayName": "Bahasa Manis",
+  "description": "Sintaks highlight dan asosiasi file untuk Bahasa Manis (.bm)",
+  "version": "0.1.0",
+  "publisher": "MSamjaya",
+  "icon": "images/icon.png",
+  "engines": { "vscode": "^1.70.0" },
+  "categories": ["Programming Languages"],
+  "repository": { "type": "git", "url": "https://github.com/TheCoderScients/BahasaManis" },
+  "bugs": { "url": "https://github.com/TheCoderScients/BahasaManis/issues" },
+  "homepage": "https://github.com/TheCoderScients/BahasaManis",
+  "contributes": {
+    "languages": [
+      {
+        "id": "bahasamanis",
+        "aliases": ["Bahasa Manis", "BM"],
+        "extensions": [".bm"],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "bahasamanis",
+        "scopeName": "source.bm",
+        "path": "./syntaxes/bm.tmLanguage.json"
+      }
+    ],
+    "snippets": [
+      {
+        "language": "bahasamanis",
+        "path": "./snippets/bm.json"
+      }
+    ]
+  }
+}

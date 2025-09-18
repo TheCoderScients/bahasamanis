@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>BahasaManis Playground</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/htm/mini/index.js"></script>
+  <style>body { background: #0f172a; color: #e6edf3; }</style>
+</head>
+<body class="p-4">
+  <div id="root" class="max-w-4xl mx-auto"></div>
+
+  <script>
+    const html = htm.bind(React.createElement);
+
+    function App(){
+      const [code, setCode] = React.useState('# Contoh:\\n cetak \"Halo, Dunia!\"\\n\\ncetak \"Masukkan umur Anda:\"\\nbaca umur\\n\\njika int(umur) < 13 maka\\n  cetak \"Anak-anak\"\\nelif int(umur) < 18 maka\\n  cetak \"Remaja\"\\nlain\\n  cetak \"Dewasa\"\\nakhir');
+      const [output, setOutput] = React.useState("");
+      const [running, setRunning] = React.useState(false);
+
+      // Preprocess: temukan baris 'baca <var>' dan prompt user untuk nilainya,
+      // lalu ganti baris 'baca var' dengan assignment var = "<value>"
+      function preprocessInputs(sourceCode){
+        const lines = sourceCode.split('\\n');
+        const result = [];
+        for(let i=0;i<lines.length;i++){
+          const ln = lines[i];
+          // match: optional spaces, baca, spaces, varname (letter or _ start), maybe trailing spaces
+          const m = ln.match(/^\\s*baca\\s+([A-Za-z_][A-Za-z0-9_]*)\\s*$/);
+          if(m){
+            const varname = m[1];
+            // Try to offer a helpful default prompt label:
+            // If previous non-empty line is: cetak "..." then use that message (strip 'cetak ')
+            let label = "Masukkan " + varname + ":";
+            // scan back to find a cetak immediate before (maximum 2 lines back)
+            for(let k = i-1; k >= Math.max(0,i-3); k--){
+              const prev = lines[k].trim();
+              const mc = prev.match(/^cetak\\s+(['"])(.*)\\1\\s*$/);
+              if(mc){
+                label = mc[2];
+                break;
+              }
+            }
+            // prompt the user (synchronous)
+            const val = window.prompt(label, "");
+            // if user canceled (val === null), use empty string
+            const safe = (val === null) ? "" : val;
+            // replace 'baca var' with assignment that keeps strings quoted (BahasaManis expects string input)
+            // we put quotes around and escape any double quotes inside
+            const escaped = safe.replace(/"/g, '\\"');
+            result.push(varname + ' = "' + escaped + '"');
+          } else {
+            result.push(ln);
+          }
+        }
+        return result.join('\\n');
+      }
+
+      async function runCode(){
+        setRunning(true);
+        setOutput('...menjalankan...');
+        try{
+          // Preprocess code: handle 'baca' by prompting user and replacing with assignment
+          const processed = preprocessInputs(code);
+
+          const res = await fetch('/run', {
+            method: 'POST', headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({code: processed})
+          });
+          // expect JSON with fields { output: "...", error: "..." }
+          const j = await res.json();
+          setOutput(j.output || j.error || 'No output');
+        }catch(err){
+          setOutput('Gagal terhubung ke server: '+err.message);
+        }
+        setRunning(false);
+      }
+
+      async function transpile(){
+        try{
+          const res = await fetch('/transpile', {
+            method:'POST', headers:{'Content-Type':'application/json'},
+            body: JSON.stringify({code})
+          });
+          const j = await res.json();
+          const newWin = window.open();
+          newWin.document.write('<pre>'+escapeHtml(j.py)+'</pre>');
+        }catch(e){
+          alert('Gagal: '+e.message)
+        }
+      }
+
+      function escapeHtml(s){
+        return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      }
+
+      return html`
+        <div class="space-y-4">
+          <header class="flex justify-between items-center">
+            <h1 class="text-2xl font-bold">BahasaManis Playground</h1>
+            <div class="text-sm text-slate-400">Local server aktif di Termux</div>
+          </header>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="md:col-span-2">
+              <label class="block text-sm text-slate-300 mb-1">Kode BahasaManis</label>
+              <textarea class="w-full h-64 p-2 font-mono bg-slate-900 rounded"
+                        value=${code}
+                        onInput=${e => setCode(e.target.value)} />
+              <div class="mt-2 flex gap-2">
+                <button class="px-4 py-2 rounded bg-emerald-500 hover:bg-emerald-600"
+                        onClick=${runCode}
+                        disabled=${running}>
+                  ${running? 'Menjalankan...' : 'Jalankan'}
+                </button>
+                <button class="px-4 py-2 rounded bg-sky-500 hover:bg-sky-600"
+                        onClick=${transpile}>
+                  Transpile -> Python
+                </button>
+                <button class="px-4 py-2 rounded bg-slate-700 hover:bg-slate-600"
+                        onClick=${() => { setCode('# Contoh:\\n cetak \"Halo, Dunia!\"'); setOutput(''); }}>
+                  Reset
+                </button>
+              </div>
+            </div>
+
+            <aside class="bg-slate-800 p-3 rounded font-mono">
+              <div class="text-sm text-slate-300 mb-2">Output</div>
+              <pre class="whitespace-pre-wrap text-sm">${output}</pre>
+            </aside>
+          </div>
+        </div>
+      `;
+    }
+
+    ReactDOM.createRoot(document.getElementById('root'))
+      .render(React.createElement(App));
+  </script>
+</body>
+</html>

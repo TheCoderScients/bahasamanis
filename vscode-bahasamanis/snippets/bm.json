@@ -1,0 +1,58 @@
+{
+  "Cetak": {
+    "prefix": "cetak",
+    "body": [
+      "cetak \"${1:Teks}\""
+    ],
+    "description": "Cetak string"
+  },
+  "Baca": {
+    "prefix": "baca",
+    "body": [
+      "cetak \"${1:Masukkan nilai}: \"",
+      "baca ${2:variabel}"
+    ],
+    "description": "Prompt lalu baca input"
+  },
+  "Jika-Elif-Lain": {
+    "prefix": "jika",
+    "body": [
+      "jika ${1:kondisi} maka",
+      "    ${2:cetak \"benar\"}",
+      "elif ${3:kondisi_lain} maka",
+      "    ${4:cetak \"elif\"}",
+      "lain",
+      "    ${5:cetak \"salah\"}",
+      "akhir"
+    ],
+    "description": "Blok jika/elif/lain"
+  },
+  "Selama": {
+    "prefix": "selama",
+    "body": [
+      "selama ${1:kondisi} maka",
+      "    ${2:cetak \"loop\"}",
+      "akhir"
+    ],
+    "description": "Loop while"
+  },
+  "Untuk": {
+    "prefix": "untuk",
+    "body": [
+      "untuk ${1:i} dari ${2:1} sampai ${3:10} lakukan",
+      "    ${4:cetak \"{${1:i}}\"}",
+      "akhir"
+    ],
+    "description": "Loop for"
+  },
+  "Fungsi": {
+    "prefix": "fungsi",
+    "body": [
+      "fungsi ${1:nama}(${2:arg})",
+      "    ${3:cetak \"fungsi\"}",
+      "    kembali ${4:nilai}",
+      "akhir"
+    ],
+    "description": "Definisi fungsi"
+  }
+}

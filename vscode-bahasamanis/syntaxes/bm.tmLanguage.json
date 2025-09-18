@@ -1,0 +1,43 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "Bahasa Manis",
+  "scopeName": "source.bm",
+  "patterns": [
+    { "include": "#comments" },
+    { "include": "#strings" },
+    { "include": "#numbers" },
+    { "include": "#keywords" },
+    { "include": "#builtins" }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        { "name": "comment.line.number-sign.bm", "match": "#.*$" }
+      ]
+    },
+    "strings": {
+      "patterns": [
+        { "name": "string.quoted.double.bm", "begin": "\"", "end": "\"", "patterns": [{ "name": "constant.character.escape.bm", "match": "\\." }] },
+        { "name": "string.quoted.single.bm", "begin": "'", "end": "'", "patterns": [{ "name": "constant.character.escape.bm", "match": "\\." }] }
+      ]
+    },
+    "numbers": {
+      "patterns": [
+        { "name": "constant.numeric.bm", "match": "\\b(0|[1-9][0-9]*)\\b" }
+      ]
+    },
+    "keywords": {
+      "patterns": [
+        { "name": "keyword.control.bm", "match": "\\b(jika|elif|lain|akhir|selama|untuk|fungsi|kembali|lanjut|henti)\\b" },
+        { "name": "constant.language.boolean.bm", "match": "\\b(benar|salah)\\b" },
+        { "name": "keyword.operator.logical.bm", "match": "\\b(dan|atau|tidak)\\b" },
+        { "name": "keyword.other.print.bm", "match": "\\b(cetak|baca)\\b" }
+      ]
+    },
+    "builtins": {
+      "patterns": [
+        { "name": "support.function.builtin.bm", "match": "\\b(len|int|float|str|range)\\b" }
+      ]
+    }
+  }
+}

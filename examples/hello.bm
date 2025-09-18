@@ -1,0 +1,4 @@
+# Halo dunia dengan input
+cetak "Masukkan nama:"
+baca nama
+cetak "Halo, {nama}!"

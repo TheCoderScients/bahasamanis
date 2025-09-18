@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+.build/
+build/
+dist/
+.venv/
+venv/
+.pytest_cache/
+
+# VSCode/IDE
+*.code-workspace
+.idea/
+.DS_Store
+Thumbs.db
+
+# PyInstaller
+*.spec
