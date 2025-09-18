@@ -65,18 +65,10 @@ jobs:
           python -m pip install --upgrade pip
           pip install pyinstaller pillow
 
-      - name: Prepare icon (.ico)
+      - name: Generate icon (.ico)
         shell: pwsh
         run: |
-          New-Item -ItemType Directory -Force -Path assets | Out-Null
-          python - << 'PY'
-          from PIL import Image
-          src = 'vscode-bahasamanis/images/icon.png'
-          dst = 'assets/bm.ico'
-          im = Image.open(src).convert('RGBA')
-          im.save(dst, sizes=[(256,256),(128,128),(64,64),(32,32),(16,16)])
-          print('Saved', dst)
-          PY
+          python -c "import os; from PIL import Image; os.makedirs('assets', exist_ok=True); im=Image.open('vscode-bahasamanis/images/icon.png').convert('RGBA'); im.save('assets/bm.ico', sizes=[(256,256),(128,128),(64,64),(32,32),(16,16)])"
 
       - name: Build single-file exe
         run: |
