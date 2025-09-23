@@ -1,0 +1,18 @@
+# Jalankan semua demo BM sekaligus (semua menghasilkan output langsung)
+# Cukup: bm jalankan examples/run_all_demos.bm
+
+cetak "==== MULAI: output_demo.bm ===="
+pakai "output_demo.bm"
+cetak "==== SELESAI: output_demo.bm ===="
+
+cetak "==== MULAI: waktu_demo.bm ===="
+pakai "waktu_demo.bm"
+cetak "==== SELESAI: waktu_demo.bm ===="
+
+cetak "==== MULAI: acak_demo.bm ===="
+pakai "acak_demo.bm"
+cetak "==== SELESAI: acak_demo.bm ===="
+
+cetak "==== MULAI: json_demo.bm ===="
+pakai "json_demo.bm"
+cetak "==== SELESAI: json_demo.bm ===="

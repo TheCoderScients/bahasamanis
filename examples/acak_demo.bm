@@ -1,0 +1,5 @@
+pakai "bm_standar/acak" sebagai a
+cetak a.bilangan(1, 10)
+list = [1,2,3,4,5]
+cetak a.pilihan(list)
+cetak a.acak_urutan(list)

@@ -1,0 +1,7 @@
+pakai "bm_standar/json" sebagai j
+data = {"nama": "BM", "versi": 1}
+cetak j.bentuk(data, rapi=benar)
+teks = j.bentuk(data)
+data2 = j.urai(teks)
+cetak data2["nama"]
+cetak data2["versi"]

@@ -40,6 +40,7 @@ jobs:
           password: ${{ secrets.TEST_PYPI_API_TOKEN }}
           repository-url: https://test.pypi.org/legacy/
           packages-dir: dist
+          skip-existing: true
 
       - name: Publish to PyPI
         if: env.PUBLISH_TARGET == 'pypi'
@@ -47,6 +48,7 @@ jobs:
         with:
           password: ${{ secrets.PYPI_API_TOKEN }}
           packages-dir: dist
+          skip-existing: true
 
   windows-binary:
     runs-on: windows-latest

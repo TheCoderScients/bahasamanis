@@ -1,6 +1,7 @@
 # BahasaManis interpreter + transpiler (v3) - save as bahasamanis.py
 from __future__ import annotations
-import ast, re, traceback
+import ast, re, traceback, os
+from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 # --- Exceptions & statement classes ---
@@ -33,11 +34,21 @@ class FuncDef(Stmt):
     def __init__(self, name:str, args:List[str], body:List[Stmt], lineno:int):
         self.name=name; self.args=args; self.body=body; self.lineno=lineno
 
+class ImportPkgStmt(Stmt):
+    """paket "modul.python" sebagai alias"""
+    def __init__(self, module:str, alias:str, lineno:int):
+        self.module = module; self.alias = alias; self.lineno = lineno
+
+class ImportBMStmt(Stmt):
+    """pakai "path/to/modul.bm" [sebagai alias]"""
+    def __init__(self, path:str, alias:Optional[str], lineno:int):
+        self.path = path; self.alias = alias; self.lineno = lineno
+
 # --- Expression safety using AST ---
 _ALLOWED_NODES = {
     ast.Expression, ast.BinOp, ast.UnaryOp, ast.Num, ast.Str, ast.Name, ast.Load,
     ast.Call, ast.Compare, ast.BoolOp, ast.List, ast.Dict, ast.Tuple, ast.Subscript,
-    ast.Index, ast.Slice, ast.Constant, ast.Attribute
+    ast.Index, ast.Slice, ast.Constant, ast.Attribute, ast.keyword
 }
 _ALLOWED_OPERATORS = {
     ast.Add, ast.Sub, ast.Mult, ast.Div, ast.Mod, ast.Pow, ast.FloorDiv,
@@ -49,6 +60,7 @@ def _expr_to_python(expr: str) -> str:
     replacements = [
         (r"\bbenar\b", "True"),
         (r"\bsalah\b", "False"),
+        (r"\bkosong\b", "None"),
         (r"\bdan\b", " and "),
         (r"\batau\b", " or "),
         (r"\btidak\b", " not "),
@@ -99,9 +111,12 @@ def _interpolate_exprs(inner: str, env: Dict[str,Any]) -> str:
         try:
             node = ast.parse(pyexpr, mode="eval")
             _check_ast_nodes(node)
-            safe_globals = {"__builtins__": {}}
+            safe_globals = {"__builtins__": {"__import__": __import__}}
             val = eval(compile(node, "<interp>", "eval"), safe_globals, env)
             return str(val)
+        except SyntaxError:
+            # Treat as literal (e.g., JSON fragments inside text)
+            return '{' + expr + '}'
         except Exception as e:
             raise BMError(f"Kesalahan interpolasi string: {_translate_error_message(str(e))}")
     return pattern.sub(repl, inner)
@@ -120,7 +135,7 @@ def safe_eval(expr: str, env: Dict[str,Any]):
     except SyntaxError as e:
         raise BMError(f"Kesalahan sintaks pada ekspresi `{expr}`: {_translate_error_message(str(e))}")
     _check_ast_nodes(node)
-    safe_globals = {"__builtins__": {}}
+    safe_globals = {"__builtins__": {"__import__": __import__}}
     return eval(compile(node, "<expr>", "eval"), safe_globals, env)
 
 # --- Parser ---
@@ -159,6 +174,23 @@ def parse_program(src:str):
             lineno, line = lines[i]; i+=1
             if stop_tokens and line in stop_tokens:
                 return stmts
+            # paket "modul" (sebagai alias)?
+            m = re.match(r'^paket\s+(["\"][^"\"]+["\"])\s*(?:sebagai|as)\s*([A-Za-z_][A-Za-z0-9_]*)\s*$', line)
+            if m:
+                mod = m.group(1)[1:-1]
+                alias = m.group(2)
+                stmts.append(ImportPkgStmt(mod, alias, lineno)); continue
+            m = re.match(r'^paket\s+(["\"][^"\"]+["\"])\s*$', line)
+            if m:
+                mod = m.group(1)[1:-1]
+                alias = mod.split('.')[-1]
+                stmts.append(ImportPkgStmt(mod, alias, lineno)); continue
+            # pakai "file.bm" (sebagai alias)?
+            m = re.match(r'^pakai\s+(["\"][^"\"]+["\"])\s*(?:(sebagai|as)\s*([A-Za-z_][A-Za-z0-9_]*))?\s*$', line)
+            if m:
+                path = m.group(1)[1:-1]
+                alias = m.group(3) if m.group(2) else None
+                stmts.append(ImportBMStmt(path, alias, lineno)); continue
             m = re.match(r"^fungsi\s+([A-Za-z_][A-Za-z0-9_]*)\s*\((.*?)\)\s*$", line)
             if m:
                 name=m.group(1); args_str=m.group(2).strip()
@@ -247,6 +279,20 @@ class Interpreter:
         }
         # Input provider can be overridden (e.g., by web server) to supply inputs from request
         self.input_func = input
+        # Root path for 'pakai' resolution
+        self.base_path = Path.cwd()
+        # Additional search paths for resolving 'pakai' modules (propagated to child interpreters)
+        self.search_paths: List[Path] = [self.base_path]
+        # Try to include installed package data for bm_standar if available
+        try:
+            import bahasamanis_data as _bmdata
+            # data_pkg_root points to .../bahasamanis_data
+            data_pkg_root = Path(_bmdata.__file__).parent
+            if data_pkg_root.exists():
+                # We add the parent that contains the 'bm_standar' folder.
+                self.search_paths.append(data_pkg_root)
+        except Exception:
+            pass
     def _env(self, local:Optional[Dict[str,Any]]=None):
         env = {}
         env.update(self.builtins)
@@ -256,10 +302,43 @@ class Interpreter:
             env[name] = self._make_callable(fdef)
         return env
     def _make_callable(self, fdef:FuncDef):
-        def wrapper(*args):
+        # Preprocess parameters: support defaults like "nama=nilai"
+        # NOTE: we DO NOT evaluate defaults here to avoid any side-effects during import.
+        #       Defaults will be evaluated at call-time in the current environment.
+        param_names: List[str] = []
+        default_exprs: Dict[str, str] = {}
+        for raw in (fdef.args or []):
+            raw = (raw or '').strip()
+            if not raw:
+                continue
+            if '=' in raw:
+                name, defexpr = raw.split('=', 1)
+                name = name.strip(); defexpr = defexpr.strip()
+                param_names.append(name)
+                default_exprs[name] = defexpr
+            else:
+                param_names.append(raw)
+
+        def wrapper(*args, **kwargs):
             local = {}
-            for i,argname in enumerate(fdef.args):
-                if argname: local[argname] = args[i] if i < len(args) else None
+            # Fill from positional, keywords, then defaults
+            for i, name in enumerate(param_names):
+                if i < len(args):
+                    local[name] = args[i]
+                elif name in (kwargs or {}):
+                    local[name] = kwargs[name]
+                elif name in default_exprs:
+                    # Evaluate default expression at call-time using current environment
+                    try:
+                        local[name] = safe_eval(default_exprs[name], self._env(local))
+                    except Exception:
+                        local[name] = None
+                else:
+                    local[name] = None
+            # Include any extra kwargs
+            for k, v in (kwargs or {}).items():
+                if k not in local:
+                    local[k] = v
             try:
                 self._exec_block(fdef.body, local)
             except ReturnException as r:
@@ -286,7 +365,26 @@ class Interpreter:
             try:
                 if isinstance(s, PrintStmt):
                     val = safe_eval(s.expr, self._env(local))
-                    print(val)
+                    print(val, flush=True)
+                elif isinstance(s, ImportPkgStmt):
+                    try:
+                        module = __import__(s.module, fromlist=['*'])
+                    except Exception as e:
+                        raise BMError(f"Gagal mengimpor paket Python '{s.module}' pada baris {s.lineno}: {e}")
+                    self.globals[s.alias] = module
+                elif isinstance(s, ImportBMStmt):
+                    mod_obj = self._import_bm_module(s.path)
+                    if s.alias:
+                        self.globals[s.alias] = mod_obj
+                    else:
+                        # merge into current env
+                        for name, val in vars(mod_obj).items():
+                            if name.startswith('_'): continue
+                            if callable(val):
+                                # treat as function -> register into funcs via a wrapper
+                                self.globals[name] = val
+                            else:
+                                self.globals[name] = val
                 elif isinstance(s, InputStmt):
                     v = self.input_func()
                     local[s.varname] = v
@@ -361,6 +459,67 @@ class Interpreter:
             except Exception as e:
                 raise BMError(f"Kesalahan runtime pada baris {getattr(s,'lineno','?')}: {_translate_error_message(str(e))}")
 
+    # --- Module helpers ---
+    def _import_bm_module(self, path_str: str):
+        """Load a .bm file and return a simple module-like object exposing its functions & globals.
+        Resolution order:
+        - Absolute path as provided (ensure .bm)
+        - Relative to current interpreter base_path
+        - Relative to any paths in self.search_paths (in order)
+        """
+        p_raw = Path(path_str)
+        def with_suffix(p: Path) -> Path:
+            return p if p.suffix == '.bm' else p.with_suffix('.bm')
+
+        candidates: List[Path] = []
+        if p_raw.is_absolute():
+            candidates.append(with_suffix(p_raw))
+        else:
+            # base_path first
+            candidates.append(with_suffix((self.base_path / p_raw).resolve()))
+            # then inherited search paths
+            for sp in self.search_paths:
+                try:
+                    candidates.append(with_suffix((Path(sp) / p_raw).resolve()))
+                except Exception:
+                    continue
+        # de-duplicate while preserving order
+        seen = set(); ordered: List[Path] = []
+        for c in candidates:
+            key = str(c).lower()
+            if key not in seen:
+                seen.add(key); ordered.append(c)
+
+        target: Optional[Path] = None
+        for c in ordered:
+            if c.exists():
+                target = c; break
+        if target is None:
+            raise BMError(f"File BM untuk 'pakai' tidak ditemukan: {(self.base_path / p_raw).with_suffix('.bm').resolve()}")
+
+        src = target.read_text(encoding='utf-8')
+        sub = Interpreter()
+        sub.base_path = target.parent
+        # Propagate and extend search paths so nested modules can resolve to project roots
+        sub.search_paths = list({*(p for p in self.search_paths), self.base_path, target.parent})
+        # Preserve the same input function behavior
+        sub.input_func = self.input_func
+        # run submodule
+        sub.run(src)
+        # Build module-like object
+        class _BMModule: pass
+        mod = _BMModule()
+        # expose functions
+        for name,fdef in sub.funcs.items():
+            setattr(mod, name, sub._make_callable(fdef))
+        # expose globals
+        for name,val in sub.globals.items():
+            if name.startswith('_'): continue
+            setattr(mod, name, val)
+        # convenience: path attribute
+        setattr(mod, '__file__', str(target))
+        return mod
+
 def transpile_to_python(src:str) -> str:
     stmts = parse_program(src)
     lines = ["# Transpiled from BahasaManis -> Python", "def __bm_main():"]
@@ -386,6 +545,12 @@ def transpile_to_python(src:str) -> str:
             pref = indent*level
             if isinstance(s, PrintStmt):
                 lines.append(f"{pref}print({emit_expr_py(s.expr)})")
+            elif isinstance(s, ImportPkgStmt):
+                # import module as alias
+                lines.append(f"{pref}import {s.module} as {s.alias}")
+            elif isinstance(s, ImportBMStmt):
+                # For now, 'pakai' is not supported in transpile mode: leave a note
+                lines.append(f"{pref}# NOTE: 'pakai {s.path}' tidak didukung saat transpile (gunakan interpreter)")
             elif isinstance(s, InputStmt):
                 lines.append(f"{pref}{s.varname} = input()")
             elif isinstance(s, AssignStmt):

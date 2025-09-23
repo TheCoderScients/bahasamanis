@@ -1,0 +1,16 @@
+# Modul standar: jaringan (HTTP)
+# Implementasi sederhana dengan urllib.request agar tidak perlu dependensi eksternal.
+paket "urllib.request" sebagai ureq
+paket "ssl" sebagai ssl
+paket "json" sebagai pyjson
+
+fungsi ambil(url)
+  resp = ureq.urlopen(url, context=ssl.create_default_context())
+  data = resp.read()
+  teks = data.decode("utf-8", "ignore")
+  kembali teks
+akhir
+
+fungsi ambil_json(url)
+  kembali pyjson.loads(ambil(url))
+akhir

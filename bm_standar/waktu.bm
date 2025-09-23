@@ -1,0 +1,19 @@
+# Modul standar: waktu
+paket "time" sebagai tm
+paket "datetime" sebagai dt
+
+fungsi sekarang()
+  kembali dt.datetime.now().isoformat()
+akhir
+
+fungsi tidur(detik)
+  tm.sleep(float(detik))
+  kembali benar
+akhir
+
+fungsi format_waktu(dtobj=kosong, pola="%Y-%m-%d %H:%M:%S")
+  jika dtobj == kosong maka
+    dtobj = dt.datetime.now()
+  akhir
+  kembali dtobj.strftime(pola)
+akhir

@@ -1,0 +1,3 @@
+# Menggunakan paket Python
+paket "math" sebagai m
+cetak "akar 9 = {m.sqrt(9)}"

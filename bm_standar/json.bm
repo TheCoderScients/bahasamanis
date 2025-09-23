@@ -1,0 +1,14 @@
+# Modul standar: json
+paket "json" sebagai pyjson
+
+fungsi urai(teks)
+  kembali pyjson.loads(teks)
+akhir
+
+fungsi bentuk(data, rapi=salah)
+  jika rapi maka
+    kembali pyjson.dumps(data, ensure_ascii=salah, indent=2)
+  lain
+    kembali pyjson.dumps(data, ensure_ascii=salah)
+  akhir
+akhir

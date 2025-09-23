@@ -1,0 +1,14 @@
+# Demo output cepat dan jelas (tanpa jeda / input)
+paket "math" sebagai m
+pakai "bm_standar/json" sebagai j
+
+cetak "=== Demo Output Cepat ==="
+cetak "Baris 1: Halo dari BM"
+cetak "Baris 2: 4 + 5 = {4 + 5}"
+cetak "Baris 3: akar(16) = {m.sqrt(16)}"
+
+# Cetak JSON (string panjang) — langsung dari fungsi
+obj = {"nama": "BM", "fitur": ["paket", "pakai", "json"]}
+cetak j.bentuk(obj, rapi=benar)
+
+cetak "=== Selesai ==="

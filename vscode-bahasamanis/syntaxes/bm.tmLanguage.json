@@ -30,8 +30,10 @@
       "patterns": [
         { "name": "keyword.control.bm", "match": "\\b(jika|elif|lain|akhir|selama|untuk|fungsi|kembali|lanjut|henti)\\b" },
         { "name": "constant.language.boolean.bm", "match": "\\b(benar|salah)\\b" },
+        { "name": "constant.language.null.bm", "match": "\\b(kosong)\\b" },
         { "name": "keyword.operator.logical.bm", "match": "\\b(dan|atau|tidak)\\b" },
-        { "name": "keyword.other.print.bm", "match": "\\b(cetak|baca)\\b" }
+        { "name": "keyword.other.print.bm", "match": "\\b(cetak|baca)\\b" },
+        { "name": "keyword.other.import.bm", "match": "\\b(paket|pakai|sebagai|dari|ambil)\\b" }
       ]
     },
     "builtins": {

@@ -1,0 +1,14 @@
+# Modul standar: acak
+paket "random" sebagai rnd
+
+fungsi bilangan(min, max)
+  kembali rnd.randint(int(min), int(max))
+akhir
+
+fungsi pilihan(daftar)
+  kembali rnd.choice(daftar)
+akhir
+
+fungsi acak_urutan(daftar)
+  kembali rnd.sample(daftar, len(daftar))
+akhir

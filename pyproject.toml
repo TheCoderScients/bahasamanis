@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "bahasamanis"
-version = "0.1.10"
+version = "0.1.11"
 description = "Bahasa Manis (BM): Bahasa pemrograman berbahasa Indonesia dengan interpreter, transpiler, dan playground."
 readme = "README.md"
 authors = [
@@ -29,3 +29,9 @@ bm = "bahasamanis_cli:main"
 [tool.setuptools]
 # We ship the two modules in the project root
 py-modules = ["bahasamanis", "bahasamanis_cli"]
+
+[tool.setuptools.packages.find]
+include = ["bahasamanis_data*"]
+
+[tool.setuptools.package-data]
+bahasamanis_data = ["bm_standar/*.bm"]

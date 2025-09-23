@@ -1,0 +1,3 @@
+pakai "bm_standar/berkas" sebagai berkas
+berkas.tulis_berkas("test_output.txt", "Halo dari BM!")
+cetak "Ditulis: {berkas.ada('test_output.txt')}"

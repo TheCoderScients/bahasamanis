@@ -1,0 +1,45 @@
+# Modul standar: berkas
+# Fungsi: baca_berkas, tulis_berkas, ada, buat_folder, salin, pindah, hapus
+paket "pathlib" sebagai pl
+paket "shutil" sebagai sh
+
+fungsi baca_berkas(jalur)
+  kembali pl.Path(jalur).read_text(encoding="utf-8")
+akhir
+
+fungsi tulis_berkas(jalur, isi)
+  pl.Path(jalur).write_text(isi, encoding="utf-8")
+  kembali benar
+akhir
+
+fungsi ada(jalur)
+  kembali pl.Path(jalur).exists()
+akhir
+
+fungsi buat_folder(jalur)
+  pl.Path(jalur).mkdir(parents=benar, exist_ok=benar)
+  kembali benar
+akhir
+
+fungsi salin(sumber, tujuan)
+  sh.copy2(sumber, tujuan)
+  kembali benar
+akhir
+
+fungsi pindah(sumber, tujuan)
+  sh.move(sumber, tujuan)
+  kembali benar
+akhir
+
+fungsi hapus(jalur)
+  p = pl.Path(jalur)
+  jika p.is_file() maka
+    p.unlink()
+  lain
+    jika p.exists() maka
+      # Gunakan shutil.rmtree via modul yang diimpor sebagai 'sh' di awal
+      sh.rmtree(jalur)
+    akhir
+  akhir
+  kembali benar
+akhir

@@ -1,0 +1,17 @@
+pakai "bm_standar/waktu" sebagai w
+
+cetak "=== Demo Modul Waktu (bm_standar/waktu) ==="
+
+s1 = w.sekarang()
+cetak "1) Saat ini (ISO 8601): " + s1
+s2 = w.format_waktu()
+cetak "2) Format default (YYYY-MM-DD HH:MM:SS): " + s2
+
+s3 = w.format_waktu(pola='%d/%m/%Y %H:%M:%S')
+cetak "3) Format kustom (DD/MM/YYYY HH:MM:SS): " + s3
+
+cetak "4) Simulasi jeda: tidur 1 detik..."
+t_awal = w.format_waktu()
+w.tidur(1)
+t_akhir = w.format_waktu()
+cetak "Selesai! Waktu sebelum: " + t_awal + ", sesudah: " + t_akhir + " (+~1 detik)"
