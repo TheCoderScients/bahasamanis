@@ -18,9 +18,17 @@ def cmd_run(path: str):
     # Set base_path to the folder of the file for correct 'pakai' resolution
     p = Path(path).resolve()
     interp.base_path = p.parent
-    # Include project root (CWD) and file's parent for search paths
+    # Include project root (CWD) and file's parent for search paths, preserving existing defaults
     try:
-        interp.search_paths = [interp.base_path, Path.cwd()]
+        extra_paths = [interp.base_path, Path.cwd()]
+        # preserve order and uniqueness
+        seen = set()
+        new_list = []
+        for pth in [*getattr(interp, 'search_paths', []), *extra_paths]:
+            key = str(pth)
+            if key not in seen:
+                seen.add(key); new_list.append(pth)
+        interp.search_paths = new_list
     except Exception:
         pass
     try:

@@ -12,6 +12,14 @@ venv/
 .pytest_cache/
 backup_*.zip
 
+# Repo cleanup extras
+bm_standar/
+scripts/
+test_output.txt
+bm
+static/*.bak
+*.vsix
+
 # VSCode/IDE
 *.code-workspace
 .idea/
