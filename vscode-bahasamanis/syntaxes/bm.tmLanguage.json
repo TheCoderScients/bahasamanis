@@ -28,17 +28,17 @@
     },
     "keywords": {
       "patterns": [
-        { "name": "keyword.control.bm", "match": "\\b(jika|elif|lain|akhir|selama|untuk|fungsi|kembali|lanjut|henti)\\b" },
+        { "name": "keyword.control.bm", "match": "\\b(lain\\s+jika|jika|elif|lain|akhir|pilih|saat|bawaan|selama|untuk|setiap|ulangi|fungsi|kelas|ini|kembali|lanjut|lanjutkan|henti|berhenti|lewati|coba|tangkap|akhirnya|lempar|gagal|asinkron|async|tunggu)\\b" },
         { "name": "constant.language.boolean.bm", "match": "\\b(benar|salah)\\b" },
         { "name": "constant.language.null.bm", "match": "\\b(kosong)\\b" },
-        { "name": "keyword.operator.logical.bm", "match": "\\b(dan|atau|tidak)\\b" },
-        { "name": "keyword.other.print.bm", "match": "\\b(cetak|baca)\\b" },
+        { "name": "keyword.operator.logical.bm", "match": "\\b(dan|atau|tidak|dalam)\\b" },
+        { "name": "keyword.other.print.bm", "match": "\\b(cetak|baca|tanya)\\b" },
         { "name": "keyword.other.import.bm", "match": "\\b(paket|pakai|sebagai|dari|ambil)\\b" }
       ]
     },
     "builtins": {
       "patterns": [
-        { "name": "support.function.builtin.bm", "match": "\\b(len|int|float|str|range)\\b" }
+        { "name": "support.function.builtin.bm", "match": "\\b(len|int|float|str|range|abs|min|max|round|panjang|angka|pecahan|teks|rentang|mutlak|terkecil|terbesar|bulatkan|rapikan|kecil|besar|ganti|pisah|gabung|mulai_dengan|berakhir_dengan|cari|tambah|daftar|kamus|berisi|ambil|atur|hapus|urutkan|balik|kunci|nilai|pasangan|salin|baca_berkas|baca_file|baca_baris|tulis_berkas|tulis_file|tambah_berkas|tambah_file|ada_berkas|ada_file|hapus_berkas|hapus_file|daftar_berkas|daftar_file|jeda)\\b" }
       ]
     }
   }

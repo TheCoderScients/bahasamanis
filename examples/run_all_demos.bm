@@ -16,3 +16,19 @@ cetak "==== SELESAI: acak_demo.bm ===="
 cetak "==== MULAI: json_demo.bm ===="
 pakai "json_demo.bm"
 cetak "==== SELESAI: json_demo.bm ===="
+
+cetak "==== MULAI: data_loop.bm ===="
+pakai "data_loop.bm"
+cetak "==== SELESAI: data_loop.bm ===="
+
+cetak "==== MULAI: berkas_demo.bm ===="
+pakai "berkas_demo.bm"
+cetak "==== SELESAI: berkas_demo.bm ===="
+
+cetak "==== MULAI: menu_pilihan.bm ===="
+cetak "(Dilewati di run_all karena membutuhkan input pengguna.)"
+cetak "==== SELESAI: menu_pilihan.bm ===="
+
+cetak "==== MULAI: fitur_lanjutan.bm ===="
+pakai "fitur_lanjutan.bm"
+cetak "==== SELESAI: fitur_lanjutan.bm ===="

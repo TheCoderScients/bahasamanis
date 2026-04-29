@@ -1,0 +1,38 @@
+# Contoh fitur lanjutan: exception handling, OOP, dan async
+
+cetak "=== Coba/Tangkap ==="
+coba
+    nilai = angka("bukan angka")
+    cetak nilai
+tangkap error
+    cetak "Ada kesalahan yang aman ditangkap:"
+    cetak error
+akhirnya
+    cetak "Bagian akhirnya tetap berjalan."
+akhir
+
+cetak ""
+cetak "=== Kelas ==="
+kelas Siswa
+    fungsi mulai(nama, nilai)
+        ini.nama = nama
+        ini.nilai = nilai
+    akhir
+
+    fungsi info()
+        kembali "{ini.nama} mendapat nilai {ini.nilai}"
+    akhir
+akhir
+
+siswa = Siswa("Budi", 88)
+cetak siswa.info()
+
+cetak ""
+cetak "=== Asinkron ==="
+asinkron fungsi ambil_pesan(nama)
+    tunggu jeda(0.1)
+    kembali "Halo, {nama}. Data sudah siap."
+akhir
+
+pesan = tunggu ambil_pesan("Bahasa Manis")
+cetak pesan

@@ -7,16 +7,16 @@ cetak "Masukkan b:"
 baca b
 
 jika op == "+" maka
-    cetak "Hasil: {float(a) + float(b)}"
-elif op == "-" maka
-    cetak "Hasil: {float(a) - float(b)}"
-elif op == "*" maka
-    cetak "Hasil: {float(a) * float(b)}"
-elif op == "/" maka
-    jika float(b) == 0 maka
+    cetak "Hasil: {pecahan(a) + pecahan(b)}"
+lain jika op == "-" maka
+    cetak "Hasil: {pecahan(a) - pecahan(b)}"
+lain jika op == "*" maka
+    cetak "Hasil: {pecahan(a) * pecahan(b)}"
+lain jika op == "/" maka
+    jika pecahan(b) == 0 maka
         cetak "Tak bisa bagi 0"
     lain
-        cetak "Hasil: {float(a) / float(b)}"
+        cetak "Hasil: {pecahan(a) / pecahan(b)}"
     akhir
 lain
     cetak "Operator tidak dikenali"

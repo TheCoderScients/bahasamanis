@@ -1,0 +1,24 @@
+# Contoh pemula: percabangan dengan kata Indonesia
+cetak "Masukkan nama:"
+baca nama
+nama = rapikan(nama)
+
+jika panjang(nama) == 0 maka
+    nama = "teman"
+akhir
+
+cetak "Masukkan nilai:"
+baca nilai
+nilai = angka(nilai)
+
+jika nilai >= 90 maka
+    predikat = "Sangat baik"
+lain jika nilai >= 75 maka
+    predikat = "Baik"
+lain jika nilai >= 60 maka
+    predikat = "Cukup"
+lain
+    predikat = "Perlu latihan lagi"
+akhir
+
+cetak "Halo, {nama}. Predikat kamu: {predikat}"

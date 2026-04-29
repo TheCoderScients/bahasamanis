@@ -1,0 +1,24 @@
+# Contoh berkas: simpan, tambah, baca, dan hapus catatan
+
+path = "/tmp/bahasa_manis_catatan.txt"
+
+tulis_berkas(path, "Belajar Bahasa Manis\n")
+tambah_berkas(path, "Bisa simpan catatan\n") # komentar inline aman
+tambah_berkas(path, "Bisa dibaca lagi")
+
+jika ada_berkas(path) maka
+    cetak "=== Isi Catatan ==="
+    cetak baca_berkas(path)
+
+    cetak ""
+    cetak "=== Baca Per Baris ==="
+    baris = baca_baris(path)
+    setiap item dalam baris lakukan
+        cetak "- {item}"
+    akhir
+
+    cetak "Jumlah baris: {panjang(baris)}"
+akhir
+
+hapus_berkas(path)
+cetak "Sudah dibersihkan: {tidak ada_berkas(path)}"

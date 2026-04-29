@@ -14,18 +14,45 @@
     ],
     "description": "Prompt lalu baca input"
   },
-  "Jika-Elif-Lain": {
+  "Tanya": {
+    "prefix": "tanya",
+    "body": [
+      "tanya \"${1:Masukkan nilai}: \" sebagai ${2:variabel}"
+    ],
+    "description": "Input dengan prompt satu baris"
+  },
+  "Jika-Lain Jika-Lain": {
     "prefix": "jika",
     "body": [
       "jika ${1:kondisi} maka",
       "    ${2:cetak \"benar\"}",
-      "elif ${3:kondisi_lain} maka",
-      "    ${4:cetak \"elif\"}",
+      "lain jika ${3:kondisi_lain} maka",
+      "    ${4:cetak \"lain jika\"}",
       "lain",
       "    ${5:cetak \"salah\"}",
       "akhir"
     ],
-    "description": "Blok jika/elif/lain"
+    "description": "Blok jika/lain jika/lain"
+  },
+  "Lain Jika": {
+    "prefix": "lainjika",
+    "body": [
+      "lain jika ${1:kondisi} maka",
+      "    ${2:cetak \"cabang lain\"}"
+    ],
+    "description": "Cabang lain jika"
+  },
+  "Pilih": {
+    "prefix": "pilih",
+    "body": [
+      "pilih ${1:menu}",
+      "    saat \"${2:1}\"",
+      "        ${3:cetak \"pilihan 1\"}",
+      "    bawaan",
+      "        ${4:cetak \"pilihan lain\"}",
+      "akhir"
+    ],
+    "description": "Percabangan menu pilih/saat/bawaan"
   },
   "Selama": {
     "prefix": "selama",
@@ -45,6 +72,33 @@
     ],
     "description": "Loop for"
   },
+  "Untuk Dalam": {
+    "prefix": "untukdalam",
+    "body": [
+      "untuk ${1:item} dalam ${2:data} lakukan",
+      "    ${3:cetak ${1:item}}",
+      "akhir"
+    ],
+    "description": "Loop setiap item dalam data"
+  },
+  "Setiap Dalam": {
+    "prefix": "setiap",
+    "body": [
+      "setiap ${1:item} dalam ${2:data} lakukan",
+      "    ${3:cetak ${1:item}}",
+      "akhir"
+    ],
+    "description": "Loop natural untuk setiap item dalam data"
+  },
+  "Ulangi": {
+    "prefix": "ulangi",
+    "body": [
+      "ulangi ${1:3} kali lakukan",
+      "    ${2:cetak \"ulang\"}",
+      "akhir"
+    ],
+    "description": "Ulangi blok beberapa kali"
+  },
   "Fungsi": {
     "prefix": "fungsi",
     "body": [
@@ -54,5 +108,115 @@
       "akhir"
     ],
     "description": "Definisi fungsi"
+  },
+  "Panjang": {
+    "prefix": "panjang",
+    "body": [
+      "panjang(${1:data})"
+    ],
+    "description": "Hitung panjang data"
+  },
+  "Angka": {
+    "prefix": "angka",
+    "body": [
+      "angka(${1:teks})"
+    ],
+    "description": "Ubah teks menjadi bilangan bulat"
+  },
+  "Rapikan": {
+    "prefix": "rapikan",
+    "body": [
+      "rapikan(${1:teks})"
+    ],
+    "description": "Hapus spasi di awal/akhir teks"
+  },
+  "Tambah": {
+    "prefix": "tambah",
+    "body": [
+      "tambah(${1:daftar}, ${2:nilai})"
+    ],
+    "description": "Tambah nilai ke daftar"
+  },
+  "Kamus": {
+    "prefix": "kamus",
+    "body": [
+      "${1:data} = kamus()",
+      "atur(${1:data}, \"${2:kunci}\", ${3:nilai})"
+    ],
+    "description": "Buat kamus dan isi nilai"
+  },
+  "Tulis Berkas": {
+    "prefix": "tulisberkas",
+    "body": [
+      "tulis_berkas(\"${1:data.txt}\", ${2:\"Isi berkas\"})"
+    ],
+    "description": "Tulis teks ke berkas"
+  },
+  "Baca Berkas": {
+    "prefix": "bacaberkas",
+    "body": [
+      "${1:isi} = baca_berkas(\"${2:data.txt}\")",
+      "cetak ${1:isi}"
+    ],
+    "description": "Baca isi berkas"
+  },
+  "Coba Tangkap": {
+    "prefix": "coba",
+    "body": [
+      "coba",
+      "    ${1:angka(\"abc\")}",
+      "tangkap ${2:error}",
+      "    ${3:cetak error}",
+      "akhirnya",
+      "    ${4:cetak \"selesai\"}",
+      "akhir"
+    ],
+    "description": "Tangani kesalahan dengan coba/tangkap"
+  },
+  "Kelas": {
+    "prefix": "kelas",
+    "body": [
+      "kelas ${1:NamaKelas}",
+      "    fungsi mulai(${2:nama})",
+      "        ini.nama = ${2:nama}",
+      "    akhir",
+      "",
+      "    fungsi info()",
+      "        kembali \"{ini.nama}\"",
+      "    akhir",
+      "akhir"
+    ],
+    "description": "Buat kelas sederhana"
+  },
+  "Asinkron": {
+    "prefix": "asinkron",
+    "body": [
+      "asinkron fungsi ${1:nama_fungsi}(${2:arg})",
+      "    tunggu jeda(${3:1})",
+      "    kembali ${4:\"selesai\"}",
+      "akhir"
+    ],
+    "description": "Buat fungsi asinkron"
+  },
+  "Berhenti Loop": {
+    "prefix": "berhenti",
+    "body": [
+      "berhenti"
+    ],
+    "description": "Hentikan loop saat ini"
+  },
+  "Lanjutkan Loop": {
+    "prefix": "lanjutkan",
+    "body": [
+      "lanjutkan"
+    ],
+    "description": "Lanjut ke putaran loop berikutnya"
+  },
+  "Lewati": {
+    "prefix": "lewati",
+    "body": [
+      "lewati"
+    ],
+    "description": "Blok kosong yang sengaja dilewati"
   }
 }

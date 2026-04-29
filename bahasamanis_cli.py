@@ -2,14 +2,15 @@
 """
 CLI untuk Bahasa Manis (BM)
 Perintah:
-  bm run|jalankan file.bm
-  bm transpile|ubah file.bm -o file.py
-  bm repl
+  bm jalankan file.bm
+  bm ubah file.bm -o file.py
+  bm interaktif
+  bm versi
 """
 import sys
 import argparse
 from pathlib import Path
-from bahasamanis import Interpreter, transpile_to_python
+from bahasamanis import __version__, Interpreter, transpile_to_python
 
 def cmd_run(path: str):
     with open(path, 'r', encoding='utf-8') as f:
@@ -48,15 +49,27 @@ def cmd_transpile(path: str, out: str | None = None):
         print(py)
 
 def repl():
-    print('BM REPL — ketik "keluar" untuk berhenti. Gunakan kata kunci BM seperti cetak/baca/jika/akhir.')
+    print('BM Interaktif — ketik "keluar" untuk berhenti. Coba: cetak, baca, tanya, jika, pilih, untuk/setiap, ulangi, kelas, coba, asinkron, henti/berhenti, lanjutkan, lewati, akhir.')
     interp = Interpreter()
     buffer = []
     def is_block_complete(lines):
-        # sederhana: jika jumlah 'akhir' >= jumlah pembuka ('fungsi','jika','selama','untuk')
+        # sederhana: jika jumlah 'akhir' >= jumlah pembuka blok
         opens = 0
         for ln in lines:
             s = ln.strip()
-            if s.startswith('fungsi ') or s.startswith('jika ') or s.startswith('selama ') or s.startswith('untuk '):
+            if (
+                s.startswith('fungsi ')
+                or s.startswith('asinkron fungsi ')
+                or s.startswith('async fungsi ')
+                or s.startswith('jika ')
+                or s.startswith('selama ')
+                or s.startswith('untuk ')
+                or s.startswith('setiap ')
+                or s.startswith('ulangi ')
+                or s.startswith('pilih ')
+                or s.startswith('kelas ')
+                or s in ('coba', 'coba maka')
+            ):
                 opens += 1
             if s == 'akhir':
                 opens -= 1
@@ -81,9 +94,10 @@ def repl():
 
 def main(argv: list[str] | None = None):
     parser = argparse.ArgumentParser(prog='bm', description='BahasaManis CLI')
-    parser.add_argument('action', choices=['run','transpile','jalankan','ubah','repl'], help='aksi yang dijalankan')
-    parser.add_argument('file', nargs='?', help='file sumber .bm (untuk run/transpile)')
-    parser.add_argument('--out','-o', help='file output (untuk transpile/ubah)')
+    parser.add_argument('--version', action='version', version=f'Bahasa Manis {__version__}')
+    parser.add_argument('action', choices=['jalankan','ubah','interaktif','versi','run','transpile','repl'], help='aksi: jalankan, ubah, interaktif, atau versi')
+    parser.add_argument('file', nargs='?', help='file sumber .bm')
+    parser.add_argument('--out','-o', help='file hasil Python untuk perintah ubah')
     args = parser.parse_args(argv)
     act = args.action
     if act in ('run','jalankan'):
@@ -94,6 +108,8 @@ def main(argv: list[str] | None = None):
         if not args.file:
             parser.error('butuh FILE untuk diubah')
         cmd_transpile(args.file, args.out)
+    elif act == 'versi':
+        print(f'Bahasa Manis {__version__}')
     else:
         repl()
 

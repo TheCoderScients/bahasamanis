@@ -1,0 +1,44 @@
+# Contoh data dan loop yang ramah pemula
+
+nama = ["Sari", "Budi", "Ayu"]
+hasil = []
+
+cetak "=== Untuk Dalam Daftar ==="
+untuk item dalam nama lakukan
+    tambah(hasil, besar(item))
+    cetak "Halo, {item}"
+akhir
+
+cetak ""
+cetak "=== Lanjutkan dan Berhenti ==="
+untuk item dalam nama lakukan
+    jika item == "Budi" maka
+        lanjutkan
+    akhir
+
+    cetak "Diproses: {item}"
+
+    jika item == "Ayu" maka
+        berhenti
+    akhir
+akhir
+
+cetak ""
+cetak "=== Ulangi ==="
+ulangi 3 kali lakukan
+    cetak "Belajar Bahasa Manis"
+akhir
+
+cetak ""
+cetak "=== Kamus ==="
+profil = kamus()
+atur(profil, "kelas", "XI RPL")
+atur(profil, "jumlah_nama", panjang(nama))
+
+cetak "Kelas: {ambil(profil, 'kelas')}"
+cetak "Jumlah nama: {ambil(profil, 'jumlah_nama')}"
+cetak "Nama besar: {gabung(hasil, ', ')}"
+
+jika "SARI" dalam hasil maka
+    cetak "SARI ada di hasil."
+akhir

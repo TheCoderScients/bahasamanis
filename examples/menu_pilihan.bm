@@ -1,0 +1,27 @@
+# Contoh tanya dan pilih untuk aplikasi menu
+
+tanya "Masukkan nama: " sebagai nama
+cetak "Halo, {nama}!"
+cetak ""
+cetak "Menu:"
+cetak "1. Lihat profil"
+cetak "2. Hitung nilai"
+cetak "0. Keluar"
+tanya "Pilih menu: " sebagai menu
+
+pilih menu
+    saat "1"
+        cetak "Profil: {nama}"
+    saat "2"
+        tanya "Masukkan nilai: " sebagai nilai
+        nilai = angka(nilai)
+        jika nilai >= 75 maka
+            cetak "Lulus"
+        lain
+            cetak "Belum lulus"
+        akhir
+    saat "0"
+        cetak "Sampai jumpa."
+    bawaan
+        cetak "Menu tidak tersedia."
+akhir
