@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+from __future__ import annotations
+
 """
 CLI untuk Bahasa Manis (BM)
 Perintah:
