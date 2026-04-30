@@ -1,0 +1,64 @@
+# Roadmap Bahasa Manis
+
+Roadmap ini menjaga Bahasa Manis tetap realistis: kuat untuk belajar dan aplikasi kecil, tetapi tidak mengaku sebagai pengganti penuh Python.
+
+## Prinsip
+
+- Bahasa Indonesia dulu, istilah Inggris tetap boleh sebagai kompatibilitas.
+- Mudah dibaca oleh pemula.
+- Setiap fitur inti harus punya contoh dan test.
+- Playground publik harus aman secara default.
+- Stable berarti kompatibilitas dan keandalan, bukan jumlah fitur terbanyak.
+
+## 0.2.0rc1
+
+Tujuan: kandidat rilis stabil untuk fitur beta `0.2.x`.
+
+Prioritas:
+
+- Perbaiki pesan error yang paling sering dialami pemula.
+- Lengkapi dokumentasi pemula dan mini project.
+- Pastikan semua contoh penting masuk CI.
+- Rapikan batas mode aman playground.
+- Audit fitur eksperimental agar labelnya jelas.
+
+Checklist:
+
+- [ ] Error `nama belum dibuat` lebih jelas untuk variabel yang belum ada.
+- [ ] Error blok belum ditutup memberi petunjuk `akhir`.
+- [ ] Error `angka("abc")` memberi konteks bahwa teks bukan angka.
+- [ ] Panduan pemula punya alur instalasi, input, percabangan, loop, fungsi, data, file, dan mini project.
+- [ ] Dokumen keamanan playground menjelaskan mode aman dan mode unsafe.
+- [ ] Semua demo non-interaktif jalan lewat `examples/run_all_demos.bm`.
+- [ ] `python -m pytest` hijau.
+- [ ] Build paket dan `twine check` hijau.
+
+Tidak masuk `0.2.0rc1`:
+
+- Sistem package baru.
+- OOP kompleks seperti inheritance.
+- Async event loop lanjutan.
+- Optimisasi performa besar.
+
+## 1.0.0
+
+Tujuan: rilis stabil publik.
+
+Kriteria:
+
+- Kontrak fitur inti tidak berubah tanpa deprecation.
+- CLI stabil dan terdokumentasi.
+- Test inti mencakup interpreter, transpiler, CLI, mode aman, dan contoh.
+- README cukup jelas untuk orang yang baru belajar ngoding.
+- Playground publik tidak membuka akses server.
+- Changelog dan release notes jelas.
+
+## Setelah 1.0.0
+
+Ide yang boleh dieksplorasi setelah fondasi stabil:
+
+- Formatter `.bm`.
+- Linter pesan ramah pemula.
+- Paket standar yang lebih kaya.
+- Dokumentasi website khusus.
+- Playground dengan sandbox proses terpisah dan timeout lebih kuat.

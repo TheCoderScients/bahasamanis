@@ -8,9 +8,18 @@
 
 Bahasa pemrograman berbahasa Indonesia dengan interpreter, transpiler, CLI, dan playground web.
 
-Status proyek: `0.2.0b1` beta stabilisasi. Bahasa Manis sudah enak untuk belajar, tugas, demo, dan aplikasi teks kecil. Jalur menuju rilis stabil ada di [docs/STABILITAS.md](docs/STABILITAS.md).
+Status proyek: `0.2.0b1` beta stabilisasi. Bahasa Manis sudah enak untuk belajar, tugas, demo, dan aplikasi teks kecil. Jalur menuju rilis stabil ada di [docs/STABILITAS.md](docs/STABILITAS.md) dan [docs/ROADMAP.md](docs/ROADMAP.md).
 
 PyPI: https://pypi.org/project/bahasamanis/
+
+## Dokumentasi Penting
+
+- [Panduan Pemula](docs/PANDUAN_PEMULA.md)
+- [Roadmap](docs/ROADMAP.md)
+- [Stabilitas](docs/STABILITAS.md)
+- [Keamanan Playground](docs/KEAMANAN_PLAYGROUND.md)
+- [QA Release](docs/QA_RELEASE.md)
+- [Changelog](CHANGELOG.md)
 
 ## Instalasi
 

@@ -75,3 +75,11 @@ Sebelum merilis `1.0.0`, pastikan:
 - `0.2.0b1`: beta stabilisasi fitur Indonesia
 - `0.2.0rc1`: release candidate setelah bugfix dan dokumentasi
 - `1.0.0`: stabil jika CI, demo, docs, dan mode aman sudah siap
+
+## Dokumen Pendukung
+
+- [Roadmap](ROADMAP.md)
+- [Panduan Pemula](PANDUAN_PEMULA.md)
+- [Keamanan Playground](KEAMANAN_PLAYGROUND.md)
+- [QA Release](QA_RELEASE.md)
+- [Changelog](../CHANGELOG.md)
