@@ -50,6 +50,36 @@ setiap item dalam nama lakukan
 akhir
 ```
 
+## Cek Playground
+
+```bash
+python - <<'PY'
+from server import app
+client = app.test_client()
+
+ok = client.post('/run', json={'code': 'cetak "Halo"', 'inputs': []})
+assert ok.status_code == 200
+assert 'Halo' in ok.get_json()['output']
+
+blocked = client.post('/run', json={'code': 'paket "os" sebagai os', 'inputs': []})
+assert 'mode aman' in blocked.get_json()['output']
+PY
+```
+
+Untuk cek timeout manual:
+
+```bash
+BM_PLAYGROUND_TIMEOUT_SECONDS=1 python server.py
+```
+
+Lalu jalankan kode ini di playground:
+
+```bm
+selama benar lakukan
+    lewati
+akhir
+```
+
 ## Cek Dokumentasi
 
 - [ ] README menyebut status versi saat ini.

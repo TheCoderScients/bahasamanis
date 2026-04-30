@@ -60,7 +60,7 @@ python server.py
 # buka http://127.0.0.1:5000
 ```
 
-Playground memakai mode aman secara default: `paket`, `pakai`, dan akses berkas dimatikan supaya lebih aman untuk publik. Untuk eksperimen lokal yang butuh akses penuh:
+Playground memakai mode aman secara default: `paket`, `pakai`, dan akses berkas dimatikan supaya lebih aman untuk publik. Kode pengguna juga dijalankan di worker process dengan timeout agar loop tak berujung bisa dihentikan. Untuk eksperimen lokal yang butuh akses penuh:
 
 ```
 BM_PLAYGROUND_UNSAFE=1 python server.py

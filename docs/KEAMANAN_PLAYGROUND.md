@@ -49,12 +49,15 @@ Playground punya batas ukuran:
 
 - `BM_PLAYGROUND_MAX_CODE_CHARS`
 - `BM_PLAYGROUND_MAX_OUTPUT_CHARS`
+- `BM_PLAYGROUND_TIMEOUT_SECONDS`
 
 Contoh:
 
 ```bash
-BM_PLAYGROUND_MAX_CODE_CHARS=10000 BM_PLAYGROUND_MAX_OUTPUT_CHARS=10000 python server.py
+BM_PLAYGROUND_MAX_CODE_CHARS=10000 BM_PLAYGROUND_MAX_OUTPUT_CHARS=10000 BM_PLAYGROUND_TIMEOUT_SECONDS=5 python server.py
 ```
+
+Kode pengguna dijalankan di proses worker terpisah. Jika melewati batas waktu, proses worker dihentikan dan playground mengembalikan pesan error.
 
 ## Checklist Sebelum Publik
 
@@ -64,13 +67,13 @@ BM_PLAYGROUND_MAX_CODE_CHARS=10000 BM_PLAYGROUND_MAX_OUTPUT_CHARS=10000 python s
 - [ ] Rate limit aktif jika playground dibuka publik.
 - [ ] Log tidak menyimpan data sensitif user.
 - [ ] Output dipotong jika terlalu panjang.
+- [ ] Timeout eksekusi aktif.
 - [ ] Tidak ada token atau rahasia di environment playground.
 
 ## Rekomendasi Setelah 1.0
 
-Untuk publik besar, jalankan kode user di proses terpisah dengan:
+Untuk publik besar, pertimbangkan sandbox yang lebih ketat dari worker proses bawaan:
 
-- timeout eksekusi
 - batas memori
 - working directory sementara
 - izin file minimal

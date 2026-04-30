@@ -14,6 +14,9 @@ Sudah dikerjakan:
 - Error blok yang lupa `akhir` sekarang menyebut pembuka blok dan barisnya.
 - `akhir`, `lain`, `saat`, `bawaan`, `tangkap`, dan `akhirnya` yang salah tempat sekarang memberi pesan konteks.
 - `angka()` dan `pecahan()` sekarang memberi pesan Indonesia yang lebih ramah saat konversi gagal.
+- Playground menjalankan kode user di worker process terpisah.
+- Playground punya timeout eksekusi lewat `BM_PLAYGROUND_TIMEOUT_SECONDS`.
+- Output playground dipotong dari dalam worker supaya lebih stabil.
 
 Target utama:
 

@@ -27,11 +27,12 @@ Checklist:
 - [x] Error `nama belum dibuat` lebih jelas untuk variabel yang belum ada.
 - [x] Error blok belum ditutup memberi petunjuk `akhir`.
 - [x] Error `angka("abc")` memberi konteks bahwa teks bukan angka.
-- [ ] Panduan pemula punya alur instalasi, input, percabangan, loop, fungsi, data, file, dan mini project.
-- [ ] Dokumen keamanan playground menjelaskan mode aman dan mode unsafe.
-- [ ] Semua demo non-interaktif jalan lewat `examples/run_all_demos.bm`.
-- [ ] `python -m pytest` hijau.
-- [ ] Build paket dan `twine check` hijau.
+- [x] Panduan pemula punya alur instalasi, input, percabangan, loop, fungsi, data, file, dan mini project.
+- [x] Dokumen keamanan playground menjelaskan mode aman dan mode unsafe.
+- [x] Playground menjalankan kode user di worker process dengan timeout.
+- [x] Semua demo non-interaktif jalan lewat `examples/run_all_demos.bm`.
+- [x] `python -m pytest` hijau.
+- [x] Build paket dan `twine check` hijau.
 
 Tidak masuk `0.2.0rc1`:
 
@@ -61,4 +62,4 @@ Ide yang boleh dieksplorasi setelah fondasi stabil:
 - Linter pesan ramah pemula.
 - Paket standar yang lebih kaya.
 - Dokumentasi website khusus.
-- Playground dengan sandbox proses terpisah dan timeout lebih kuat.
+- Sandbox playground dengan batas memori dan working directory sementara.
