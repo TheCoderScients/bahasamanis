@@ -22,6 +22,14 @@ Cek versi:
 bm versi
 ```
 
+Kalau perintah `bm` sudah ada tetapi gagal karena `bahasamanis_cli` tidak ditemukan,
+pasang ulang dari folder source Bahasa Manis:
+
+```bash
+python -m pip install --force-reinstall -e .
+bm diagnosa
+```
+
 ## 2. Program Pertama
 
 Buat file `halo.bm`:

@@ -20,6 +20,7 @@ Sudah dikerjakan:
 - Sintaks pemula dibuat lebih lentur tanpa menghapus gaya lama: `maka/lakukan` bisa dihilangkan di beberapa blok.
 - Fungsi tanpa parameter bisa ditulis `fungsi halo`.
 - `cetak Halo dunia` dan `tanya Nama kamu: sebagai nama` bisa dipakai untuk teks biasa tanpa tanda kutip.
+- CLI punya `bm diagnosa` untuk mengecek lokasi command, Python, dan modul yang sedang dipakai.
 
 Target utama:
 

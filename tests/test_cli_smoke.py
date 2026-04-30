@@ -20,6 +20,13 @@ def test_cli_versi():
     assert "Bahasa Manis" in result.stdout
     assert "0.2.0b1" in result.stdout
 
+def test_cli_diagnosa():
+    result = run_cli("diagnosa")
+    assert result.returncode == 0
+    assert "Bahasa Manis" in result.stdout
+    assert "Perintah bm" in result.stdout
+    assert "Modul CLI" in result.stdout
+
 def test_cli_jalankan_example():
     result = run_cli("jalankan", "examples/output_demo.bm")
     assert result.returncode == 0

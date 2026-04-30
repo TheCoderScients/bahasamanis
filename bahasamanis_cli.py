@@ -11,6 +11,7 @@ Perintah:
 """
 import sys
 import argparse
+import shutil
 from pathlib import Path
 from bahasamanis import __version__, Interpreter, transpile_to_python
 
@@ -94,10 +95,21 @@ def repl():
         except Exception as e:
             print('[Error]', e, file=sys.stderr)
 
+def cmd_diagnose():
+    print(f'Bahasa Manis : {__version__}')
+    print(f'Perintah bm  : {shutil.which("bm") or "(tidak ditemukan di PATH)"}')
+    print(f'Python       : {sys.executable}')
+    print(f'Env Python   : {sys.prefix}')
+    print(f'Modul CLI    : {Path(__file__).resolve()}')
+    print(f'Folder kerja : {Path.cwd()}')
+    print('')
+    print('Kalau `bm` pernah jalan hanya dari folder repo, pasang ulang paketnya:')
+    print('python -m pip install --force-reinstall -e /path/ke/bahasamanis')
+
 def main(argv: list[str] | None = None):
     parser = argparse.ArgumentParser(prog='bm', description='BahasaManis CLI')
     parser.add_argument('--version', action='version', version=f'Bahasa Manis {__version__}')
-    parser.add_argument('action', choices=['jalankan','ubah','interaktif','versi','run','transpile','repl'], help='aksi: jalankan, ubah, interaktif, atau versi')
+    parser.add_argument('action', choices=['jalankan','ubah','interaktif','versi','diagnosa','cek','run','transpile','repl','diagnose'], help='aksi: jalankan, ubah, interaktif, versi, atau diagnosa')
     parser.add_argument('file', nargs='?', help='file sumber .bm')
     parser.add_argument('--out','-o', help='file hasil Python untuk perintah ubah')
     args = parser.parse_args(argv)
@@ -112,6 +124,8 @@ def main(argv: list[str] | None = None):
         cmd_transpile(args.file, args.out)
     elif act == 'versi':
         print(f'Bahasa Manis {__version__}')
+    elif act in ('diagnosa','cek','diagnose'):
+        cmd_diagnose()
     else:
         repl()
 

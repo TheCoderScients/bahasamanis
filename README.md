@@ -50,8 +50,18 @@ Perintah CLI:
 - `bm jalankan file.bm`
 - `bm ubah file.bm -o file.py`
 - `bm interaktif`
+- `bm diagnosa`
 
 Alias lama tetap tersedia untuk kompatibilitas: `run`, `transpile`, dan `repl`.
+
+Jika `bm` sudah ada tetapi muncul `ModuleNotFoundError: No module named 'bahasamanis_cli'`,
+berarti script `bm` dan paket Bahasa Manis tidak berada di environment Python yang sama,
+atau instalasi editable masih menunjuk ke folder source lama. Pasang ulang dari folder repo:
+
+```
+python -m pip install --force-reinstall -e .
+bm diagnosa
+```
 
 ## Playground Web
 
