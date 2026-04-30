@@ -51,13 +51,15 @@ Kalau ingin mulai dengan struktur yang lebih rapi:
 ```bash
 bm buat aplikasi_saya
 cd aplikasi_saya
-bm jalankan src/utama.bm
+bm info
+bm jalankan
 bm cek
 bm tes
 ```
 
 `bm cek` memeriksa file `.bm` tanpa menjalankan program.
 `bm tes` menjalankan file test `.bm` di folder `tests`.
+`bm jalankan` otomatis membaca file utama dari `bm.toml` kalau dijalankan dari folder proyek.
 
 ## 4. Input
 

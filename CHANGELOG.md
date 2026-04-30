@@ -23,6 +23,8 @@ Sudah dikerjakan:
 - CLI punya `bm diagnosa` untuk mengecek lokasi command, Python, dan modul yang sedang dipakai.
 - CLI punya workflow proyek awal: `bm buat`, `bm cek`, dan `bm tes`.
 - `bm jalankan` sekarang memberi exit code gagal saat runtime error terjadi.
+- Roadmap proyek besar ditambahkan sebagai checklist lengkap.
+- `bm.toml` mulai dipakai oleh CLI lewat `bm info` dan `bm jalankan` tanpa file.
 
 Target utama:
 

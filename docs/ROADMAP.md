@@ -2,6 +2,8 @@
 
 Roadmap ini menjaga Bahasa Manis tetap realistis: kuat untuk belajar dan aplikasi kecil, tetapi tidak mengaku sebagai pengganti penuh Python.
 
+Untuk checklist besar menuju proyek produksi, lihat [ROADMAP_PROYEK_BESAR.md](ROADMAP_PROYEK_BESAR.md).
+
 ## Prinsip
 
 - Bahasa Indonesia dulu, istilah Inggris tetap boleh sebagai kompatibilitas.
@@ -32,6 +34,8 @@ Checklist:
 - [x] Playground menjalankan kode user di worker process dengan timeout.
 - [x] Sintaks pemula dibuat lebih lentur tanpa mengganti gaya lama.
 - [x] Workflow proyek awal tersedia lewat `bm buat`, `bm cek`, dan `bm tes`.
+- [x] Checklist proyek besar tersedia di `docs/ROADMAP_PROYEK_BESAR.md`.
+- [x] `bm.toml` mulai dipakai oleh CLI lewat `bm info` dan `bm jalankan` tanpa file.
 - [x] Semua demo non-interaktif jalan lewat `examples/run_all_demos.bm`.
 - [x] `python -m pytest` hijau.
 - [x] Build paket dan `twine check` hijau.

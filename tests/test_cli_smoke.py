@@ -55,6 +55,15 @@ def test_cli_buat_cek_tes_project(tmp_path):
     assert (app / "src" / "utama.bm").exists()
     assert (app / "tests" / "tes_utama.bm").exists()
 
+    info = run_cli("info", cwd=app)
+    assert info.returncode == 0
+    assert "app_manis" in info.stdout
+    assert "src/utama.bm" in info.stdout
+
+    run_default = run_cli("jalankan", cwd=app)
+    assert run_default.returncode == 0
+    assert "app_manis siap jalan" in run_default.stdout
+
     check = run_cli("cek", cwd=app)
     assert check.returncode == 0
     assert "file BM valid" in check.stdout
@@ -63,9 +72,18 @@ def test_cli_buat_cek_tes_project(tmp_path):
     assert test.returncode == 0
     assert "test BM lulus" in test.stdout
 
+    nested_info = run_cli("info", cwd=app / "src")
+    assert nested_info.returncode == 0
+    assert str(app) in nested_info.stdout
+
 def test_cli_cek_reports_syntax_error(tmp_path):
     bad = tmp_path / "bad.bm"
     bad.write_text('jika benar\n    cetak "lupa akhir"\n', encoding="utf-8")
     result = run_cli("cek", str(bad))
     assert result.returncode == 1
     assert "belum ditutup" in result.stderr
+
+def test_cli_jalankan_without_file_needs_project():
+    result = run_cli("jalankan")
+    assert result.returncode == 1
+    assert "Butuh FILE" in result.stderr

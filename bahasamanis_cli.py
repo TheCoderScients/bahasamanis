@@ -10,6 +10,7 @@ Perintah:
   bm buat nama_proyek
   bm cek [path]
   bm tes [path]
+  bm info
   bm versi
 """
 import sys
@@ -19,6 +20,54 @@ from pathlib import Path
 from bahasamanis import __version__, Interpreter, parse_program, transpile_to_python
 
 SKIP_DIRS = {'.git', '.hg', '.svn', '.venv', 'venv', '__pycache__', 'dist', 'build'}
+
+def find_project_root(start: Path | None = None) -> Path | None:
+    current = (start or Path.cwd()).resolve()
+    if current.is_file():
+        current = current.parent
+    for path in [current, *current.parents]:
+        if (path / 'bm.toml').is_file():
+            return path
+    return None
+
+def parse_bm_toml(path: Path) -> dict[str, dict[str, str]]:
+    config: dict[str, dict[str, str]] = {}
+    section = ''
+    for raw_line in path.read_text(encoding='utf-8').splitlines():
+        line = raw_line.split('#', 1)[0].strip()
+        if not line:
+            continue
+        if line.startswith('[') and line.endswith(']'):
+            section = line[1:-1].strip()
+            config.setdefault(section, {})
+            continue
+        if '=' not in line:
+            continue
+        key, value = line.split('=', 1)
+        key = key.strip()
+        value = value.strip()
+        if len(value) >= 2 and value[0] == value[-1] and value[0] in "\"'":
+            value = value[1:-1]
+        config.setdefault(section, {})[key] = value
+    return config
+
+def load_project(start: Path | None = None) -> tuple[Path, dict[str, dict[str, str]]] | None:
+    root = find_project_root(start)
+    if root is None:
+        return None
+    return root, parse_bm_toml(root / 'bm.toml')
+
+def project_value(config: dict[str, dict[str, str]], section: str, key: str, default: str) -> str:
+    return config.get(section, {}).get(key, default)
+
+def resolve_project_path(path: str | None, default: str) -> Path:
+    if path:
+        return Path(path)
+    project = load_project()
+    if project:
+        root, config = project
+        return root / default
+    return Path(default)
 
 def iter_bm_files(target: Path):
     if target.is_file():
@@ -54,7 +103,14 @@ def run_bm_file(path: Path):
         pass
     interp.run(src)
 
-def cmd_run(path: str) -> int:
+def cmd_run(path: str | None = None) -> int:
+    if not path:
+        project = load_project()
+        if not project:
+            print("[Error] Butuh FILE untuk dijalankan, atau jalankan dari proyek yang punya bm.toml.", file=sys.stderr)
+            return 1
+        root, config = project
+        path = str(root / project_value(config, 'proyek', 'utama', 'src/utama.bm'))
     try:
         run_bm_file(Path(path))
     except Exception as e:
@@ -62,7 +118,14 @@ def cmd_run(path: str) -> int:
         return 1
     return 0
 
-def cmd_transpile(path: str, out: str | None = None) -> int:
+def cmd_transpile(path: str | None = None, out: str | None = None) -> int:
+    if not path:
+        project = load_project()
+        if not project:
+            print("[Error] Butuh FILE untuk diubah, atau jalankan dari proyek yang punya bm.toml.", file=sys.stderr)
+            return 1
+        root, config = project
+        path = str(root / project_value(config, 'proyek', 'utama', 'src/utama.bm'))
     with open(path, 'r', encoding='utf-8') as f:
         src = f.read()
     py = transpile_to_python(src)
@@ -95,6 +158,12 @@ def cmd_create(name: str, template: str = 'cli') -> int:
             f'nama = "{root.name}"',
             'versi = "0.1.0"',
             'utama = "src/utama.bm"',
+            '',
+            '[cek]',
+            'path = "."',
+            '',
+            '[tes]',
+            'path = "tests"',
             '',
         ]),
         encoding='utf-8',
@@ -134,7 +203,8 @@ def cmd_create(name: str, template: str = 'cli') -> int:
             'Proyek Bahasa Manis.',
             '',
             '```bash',
-            'bm jalankan src/utama.bm',
+            'bm info',
+            'bm jalankan',
             'bm cek',
             'bm tes',
             '```',
@@ -144,11 +214,18 @@ def cmd_create(name: str, template: str = 'cli') -> int:
     )
     (root / '.gitignore').write_text('__pycache__/\n*.pyc\n', encoding='utf-8')
     print(f"Proyek '{root}' dibuat.")
-    print(f"Jalankan: cd {root} && bm jalankan src/utama.bm")
+    print(f"Jalankan: cd {root} && bm jalankan")
     return 0
 
 def cmd_check(path: str | None = None) -> int:
-    target = Path(path or '.')
+    project = load_project()
+    if path:
+        target = Path(path)
+    elif project:
+        root, config = project
+        target = root / project_value(config, 'cek', 'path', '.')
+    else:
+        target = Path('.')
     files = iter_bm_files(target)
     if not files:
         print(f"[Error] Tidak ada file .bm di '{target}'.", file=sys.stderr)
@@ -169,8 +246,15 @@ def cmd_check(path: str | None = None) -> int:
     return 0
 
 def cmd_test(path: str | None = None) -> int:
-    target = Path(path or 'tests')
-    if target.is_dir() and (target / 'tests').is_dir():
+    project = load_project()
+    if path:
+        target = Path(path)
+    elif project:
+        root, config = project
+        target = root / project_value(config, 'tes', 'path', 'tests')
+    else:
+        target = Path('tests')
+    if path and target.is_dir() and (target / 'tests').is_dir():
         target = target / 'tests'
     files = iter_bm_files(target)
     if not files:
@@ -188,6 +272,25 @@ def cmd_test(path: str | None = None) -> int:
         print(f"{failed} test gagal.", file=sys.stderr)
         return 1
     print(f"{len(files)} test BM lulus.")
+    return 0
+
+def cmd_info() -> int:
+    project = load_project()
+    if not project:
+        print('[Error] bm.toml tidak ditemukan dari folder ini.', file=sys.stderr)
+        return 1
+    root, config = project
+    name = project_value(config, 'proyek', 'nama', root.name)
+    version = project_value(config, 'proyek', 'versi', '-')
+    main_file = project_value(config, 'proyek', 'utama', 'src/utama.bm')
+    check_path = project_value(config, 'cek', 'path', '.')
+    test_path = project_value(config, 'tes', 'path', 'tests')
+    print(f'Proyek      : {name}')
+    print(f'Versi       : {version}')
+    print(f'Root        : {root}')
+    print(f'File utama  : {main_file}')
+    print(f'Cek path    : {check_path}')
+    print(f'Test path   : {test_path}')
     return 0
 
 def repl():
@@ -248,19 +351,15 @@ def cmd_diagnose():
 def main(argv: list[str] | None = None):
     parser = argparse.ArgumentParser(prog='bm', description='BahasaManis CLI')
     parser.add_argument('--version', action='version', version=f'Bahasa Manis {__version__}')
-    parser.add_argument('action', choices=['jalankan','ubah','interaktif','versi','diagnosa','buat','bikin','cek','tes','run','transpile','repl','diagnose','new','check','test'], help='aksi: jalankan, ubah, buat, cek, tes, interaktif, versi, atau diagnosa')
+    parser.add_argument('action', choices=['jalankan','ubah','interaktif','versi','diagnosa','buat','bikin','cek','tes','info','run','transpile','repl','diagnose','new','check','test'], help='aksi: jalankan, ubah, buat, cek, tes, info, interaktif, versi, atau diagnosa')
     parser.add_argument('file', nargs='?', help='file sumber .bm')
     parser.add_argument('--out','-o', help='file hasil Python untuk perintah ubah')
     parser.add_argument('--template', default='cli', help='template untuk perintah buat (default: cli)')
     args = parser.parse_args(argv)
     act = args.action
     if act in ('run','jalankan'):
-        if not args.file:
-            parser.error('butuh FILE untuk dijalankan')
         return cmd_run(args.file)
     elif act in ('transpile','ubah'):
-        if not args.file:
-            parser.error('butuh FILE untuk diubah')
         return cmd_transpile(args.file, args.out)
     elif act in ('buat','bikin','new'):
         if not args.file:
@@ -270,6 +369,8 @@ def main(argv: list[str] | None = None):
         return cmd_check(args.file)
     elif act in ('tes','test'):
         return cmd_test(args.file)
+    elif act == 'info':
+        return cmd_info()
     elif act == 'versi':
         print(f'Bahasa Manis {__version__}')
         return 0

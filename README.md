@@ -16,6 +16,7 @@ PyPI: https://pypi.org/project/bahasamanis/
 
 - [Panduan Pemula](docs/PANDUAN_PEMULA.md)
 - [Roadmap](docs/ROADMAP.md)
+- [Roadmap Proyek Besar](docs/ROADMAP_PROYEK_BESAR.md)
 - [Stabilitas](docs/STABILITAS.md)
 - [Keamanan Playground](docs/KEAMANAN_PLAYGROUND.md)
 - [QA Release](docs/QA_RELEASE.md)
@@ -53,6 +54,7 @@ Perintah CLI:
 - `bm buat nama_proyek`
 - `bm cek [path]`
 - `bm tes [path]`
+- `bm info`
 - `bm diagnosa`
 
 Alias lama tetap tersedia untuk kompatibilitas: `run`, `transpile`, `repl`, `new`, `check`, dan `test`.
@@ -62,7 +64,8 @@ Membuat proyek baru:
 ```
 bm buat aplikasi_saya
 cd aplikasi_saya
-bm jalankan src/utama.bm
+bm info
+bm jalankan
 bm cek
 bm tes
 ```
