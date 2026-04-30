@@ -31,6 +31,7 @@ Checklist:
 - [x] Dokumen keamanan playground menjelaskan mode aman dan mode unsafe.
 - [x] Playground menjalankan kode user di worker process dengan timeout.
 - [x] Sintaks pemula dibuat lebih lentur tanpa mengganti gaya lama.
+- [x] Workflow proyek awal tersedia lewat `bm buat`, `bm cek`, dan `bm tes`.
 - [x] Semua demo non-interaktif jalan lewat `examples/run_all_demos.bm`.
 - [x] `python -m pytest` hijau.
 - [x] Build paket dan `twine check` hijau.

@@ -21,6 +21,8 @@ Sudah dikerjakan:
 - Fungsi tanpa parameter bisa ditulis `fungsi halo`.
 - `cetak Halo dunia` dan `tanya Nama kamu: sebagai nama` bisa dipakai untuk teks biasa tanpa tanda kutip.
 - CLI punya `bm diagnosa` untuk mengecek lokasi command, Python, dan modul yang sedang dipakai.
+- CLI punya workflow proyek awal: `bm buat`, `bm cek`, dan `bm tes`.
+- `bm jalankan` sekarang memberi exit code gagal saat runtime error terjadi.
 
 Target utama:
 

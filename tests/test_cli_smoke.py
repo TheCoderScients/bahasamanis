@@ -5,10 +5,10 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 CLI = ROOT / "bahasamanis_cli.py"
 
-def run_cli(*args):
+def run_cli(*args, cwd=ROOT):
     return subprocess.run(
         [sys.executable, str(CLI), *args],
-        cwd=ROOT,
+        cwd=cwd,
         text=True,
         capture_output=True,
         check=False,
@@ -39,3 +39,33 @@ def test_cli_ubah_outputs_python(tmp_path):
     assert result.returncode == 0
     assert out.exists()
     assert "def __bm_main():" in out.read_text(encoding="utf-8")
+
+def test_cli_jalankan_returns_error_code_for_runtime_error(tmp_path):
+    src = tmp_path / "gagal.bm"
+    src.write_text('lempar "meledak"\n', encoding="utf-8")
+    result = run_cli("jalankan", str(src))
+    assert result.returncode == 1
+    assert "meledak" in result.stderr
+
+def test_cli_buat_cek_tes_project(tmp_path):
+    app = tmp_path / "app_manis"
+    result = run_cli("buat", str(app))
+    assert result.returncode == 0
+    assert (app / "bm.toml").exists()
+    assert (app / "src" / "utama.bm").exists()
+    assert (app / "tests" / "tes_utama.bm").exists()
+
+    check = run_cli("cek", cwd=app)
+    assert check.returncode == 0
+    assert "file BM valid" in check.stdout
+
+    test = run_cli("tes", cwd=app)
+    assert test.returncode == 0
+    assert "test BM lulus" in test.stdout
+
+def test_cli_cek_reports_syntax_error(tmp_path):
+    bad = tmp_path / "bad.bm"
+    bad.write_text('jika benar\n    cetak "lupa akhir"\n', encoding="utf-8")
+    result = run_cli("cek", str(bad))
+    assert result.returncode == 1
+    assert "belum ditutup" in result.stderr

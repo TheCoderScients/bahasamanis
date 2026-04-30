@@ -50,9 +50,22 @@ Perintah CLI:
 - `bm jalankan file.bm`
 - `bm ubah file.bm -o file.py`
 - `bm interaktif`
+- `bm buat nama_proyek`
+- `bm cek [path]`
+- `bm tes [path]`
 - `bm diagnosa`
 
-Alias lama tetap tersedia untuk kompatibilitas: `run`, `transpile`, dan `repl`.
+Alias lama tetap tersedia untuk kompatibilitas: `run`, `transpile`, `repl`, `new`, `check`, dan `test`.
+
+Membuat proyek baru:
+
+```
+bm buat aplikasi_saya
+cd aplikasi_saya
+bm jalankan src/utama.bm
+bm cek
+bm tes
+```
 
 Jika `bm` sudah ada tetapi muncul `ModuleNotFoundError: No module named 'bahasamanis_cli'`,
 berarti script `bm` dan paket Bahasa Manis tidak berada di environment Python yang sama,

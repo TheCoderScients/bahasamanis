@@ -44,7 +44,22 @@ Jalankan:
 bm jalankan halo.bm
 ```
 
-## 3. Input
+## 3. Membuat Proyek
+
+Kalau ingin mulai dengan struktur yang lebih rapi:
+
+```bash
+bm buat aplikasi_saya
+cd aplikasi_saya
+bm jalankan src/utama.bm
+bm cek
+bm tes
+```
+
+`bm cek` memeriksa file `.bm` tanpa menjalankan program.
+`bm tes` menjalankan file test `.bm` di folder `tests`.
+
+## 4. Input
 
 ```bm
 tanya Nama kamu: sebagai nama
@@ -54,7 +69,7 @@ cetak "Halo, {nama}!"
 `tanya` cocok untuk pemula karena prompt dan input jadi satu baris.
 Untuk prompt teks biasa, tanda kutip boleh dihilangkan.
 
-## 4. Percabangan
+## 5. Percabangan
 
 ```bm
 tanya "Nilai: " sebagai nilai
@@ -82,7 +97,7 @@ pilih menu
 akhir
 ```
 
-## 5. Loop
+## 6. Loop
 
 Untuk mengulang sejumlah kali:
 
@@ -102,7 +117,7 @@ setiap item dalam nama
 akhir
 ```
 
-## 6. Fungsi
+## 7. Fungsi
 
 ```bm
 fungsi salam(nama)
@@ -112,7 +127,7 @@ akhir
 cetak salam("BM")
 ```
 
-## 7. Data
+## 8. Data
 
 Daftar:
 
@@ -132,7 +147,7 @@ atur(profil, "kelas", "XI")
 cetak ambil(profil, "nama")
 ```
 
-## 8. Berkas
+## 9. Berkas
 
 Untuk aplikasi lokal:
 
@@ -145,7 +160,7 @@ cetak baca_berkas(path)
 
 Catatan: helper berkas dimatikan di mode aman playground publik.
 
-## 9. Mini Project: Catatan Sederhana
+## 10. Mini Project: Catatan Sederhana
 
 ```bm
 path = "catatan.txt"
@@ -179,7 +194,7 @@ fungsi halo
 akhir
 ```
 
-## 10. Lanjut Belajar
+## 11. Lanjut Belajar
 
 Setelah menguasai dasar:
 
