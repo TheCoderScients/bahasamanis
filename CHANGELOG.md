@@ -8,6 +8,13 @@ Format mengikuti gaya sederhana: fitur baru, perubahan, perbaikan, dan catatan k
 
 Fokus rilis ini adalah stabilisasi, bukan menambah banyak fitur baru.
 
+Sudah dikerjakan:
+
+- Error variabel belum dibuat sekarang memberi saran membuat variabel dengan assignment, `baca`, atau `tanya`.
+- Error blok yang lupa `akhir` sekarang menyebut pembuka blok dan barisnya.
+- `akhir`, `lain`, `saat`, `bawaan`, `tangkap`, dan `akhirnya` yang salah tempat sekarang memberi pesan konteks.
+- `angka()` dan `pecahan()` sekarang memberi pesan Indonesia yang lebih ramah saat konversi gagal.
+
 Target utama:
 
 - Error message makin jelas dan konsisten dalam Bahasa Indonesia.

@@ -24,9 +24,9 @@ Prioritas:
 
 Checklist:
 
-- [ ] Error `nama belum dibuat` lebih jelas untuk variabel yang belum ada.
-- [ ] Error blok belum ditutup memberi petunjuk `akhir`.
-- [ ] Error `angka("abc")` memberi konteks bahwa teks bukan angka.
+- [x] Error `nama belum dibuat` lebih jelas untuk variabel yang belum ada.
+- [x] Error blok belum ditutup memberi petunjuk `akhir`.
+- [x] Error `angka("abc")` memberi konteks bahwa teks bukan angka.
 - [ ] Panduan pemula punya alur instalasi, input, percabangan, loop, fungsi, data, file, dan mini project.
 - [ ] Dokumen keamanan playground menjelaskan mode aman dan mode unsafe.
 - [ ] Semua demo non-interaktif jalan lewat `examples/run_all_demos.bm`.

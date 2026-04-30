@@ -143,8 +143,30 @@ akhir
     it.run(src)
     captured = capsys.readouterr()
     assert "Tertangkap" in captured.out
-    assert "nilai tidak valid untuk int()" in captured.out
+    assert "angka() gagal" in captured.out
     assert "Selesai" in captured.out
+
+def test_friendly_name_and_number_errors():
+    it = Interpreter()
+    with pytest.raises(BMError, match="Variabel 'nama' belum dibuat"):
+        it.run('cetak nama')
+
+    with pytest.raises(BMError, match="angka\\(\\) gagal"):
+        it.run('nilai = angka("abc")')
+
+    with pytest.raises(BMError, match="pecahan\\(\\) gagal"):
+        it.run('nilai = pecahan("abc")')
+
+def test_friendly_block_errors():
+    it = Interpreter()
+    with pytest.raises(BMError, match="Blok `jika` pada baris 1 belum ditutup dengan `akhir`"):
+        it.run('jika benar maka\n    cetak "lupa akhir"')
+
+    with pytest.raises(BMError, match="`akhir` pada baris 1 tidak punya pembuka blok"):
+        it.run('akhir')
+
+    with pytest.raises(BMError, match="harus berada di dalam blok `jika`"):
+        it.run('lain\n    cetak "salah tempat"')
 
 def test_class_and_ini_methods(capsys):
     src = '''

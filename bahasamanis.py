@@ -140,7 +140,7 @@ def _translate_error_message(msg: str) -> str:
         (r"invalid literal for int\(\)\s*with base\s*\d+", "nilai tidak valid untuk int()"),
         (r"division or modulo by zero", "pembagian atau modulo dengan nol"),
         (r"division by zero", "pembagian dengan nol"),
-        (r"name '([^']+)' is not defined", r"nama '\1' tidak didefinisikan"),
+        (r"name '([^']+)' is not defined", r"Variabel '\1' belum dibuat. Buat dulu dengan `\1 = ...`, `baca \1`, atau `tanya \"...\" sebagai \1`."),
         (r"unsupported operand type\(s\) for ([^:]+): '([^']+)' and '([^']+)'", r"tipe operan tidak didukung untuk \1: '\2' dan '\3'"),
         (r"'([^']+)' not supported between instances of '([^']+)' and '([^']+)'", r"operator '\1' tidak didukung antara tipe '\2' dan '\3'"),
         (r"object of type '([^']+)' has no len\(\)", r"objek bertipe '\1' tidak memiliki panjang"),
@@ -151,6 +151,12 @@ def _translate_error_message(msg: str) -> str:
     for pat, repl in rules:
         out = re.sub(pat, repl, out, flags=re.IGNORECASE)
     return out
+
+def _friendly_value(value: Any) -> str:
+    text = str(value)
+    if len(text) > 60:
+        text = text[:57] + "..."
+    return text
 
 def _interpolate_exprs(inner: str, env: Dict[str,Any]) -> str:
     """Interpolate {...} segments by safely evaluating each expression.
@@ -198,6 +204,18 @@ def _bm_kecil(nilai: Any) -> str:
 
 def _bm_besar(nilai: Any) -> str:
     return str(nilai).upper()
+
+def _bm_angka(nilai: Any) -> int:
+    try:
+        return int(nilai)
+    except Exception:
+        raise BMError(f"angka() gagal: '{_friendly_value(nilai)}' bukan bilangan bulat")
+
+def _bm_pecahan(nilai: Any) -> float:
+    try:
+        return float(nilai)
+    except Exception:
+        raise BMError(f"pecahan() gagal: '{_friendly_value(nilai)}' bukan bilangan pecahan")
 
 def _bm_ganti(teks: Any, lama: Any, baru: Any) -> str:
     return str(teks).replace(str(lama), str(baru))
@@ -423,19 +441,23 @@ def parse_program(src:str):
             or txt.startswith("setiap ")
             or txt.startswith("ulangi ")
         )
-    def collect_until_akhir():
+    def collect_until_akhir(block_name: str = "blok", opener_line: Optional[int] = None):
         nonlocal i
         collected=[]
         depth = 0
+        closed = False
         while i < n:
             lnno, nxt = lines[i]
             if nxt == "akhir" and depth == 0:
-                i += 1; break
+                i += 1; closed = True; break
             collected.append((lnno, nxt)); i += 1
             if nxt == "akhir" and depth > 0:
                 depth -= 1; continue
             if is_block_start(nxt):
                 depth += 1; continue
+        if not closed:
+            info_baris = f" pada baris {opener_line}" if opener_line is not None else ""
+            raise BMError(f"Blok `{block_name}`{info_baris} belum ditutup dengan `akhir`")
         return collected
     def top_level_separator_indices(collected, predicate):
         sep_indices = []
@@ -453,13 +475,21 @@ def parse_program(src:str):
     def parse_block_from_list(sub_lines):
         src = "\n".join(l for (_,l) in sub_lines)
         return parse_program(src)
-    def parse_block(stop_tokens=None):
+    def parse_block(stop_tokens=None, opener_name: Optional[str] = None, opener_line: Optional[int] = None):
         nonlocal i
         stmts=[]
         while i<n:
             lineno, line = lines[i]; i+=1
             if stop_tokens and line in stop_tokens:
                 return stmts
+            if line == "akhir":
+                raise BMError(f"`akhir` pada baris {lineno} tidak punya pembuka blok")
+            if line == "lain" or is_elif_line(line):
+                raise BMError(f"`{line}` pada baris {lineno} harus berada di dalam blok `jika`")
+            if line.startswith("saat ") or line == "bawaan":
+                raise BMError(f"`{line}` pada baris {lineno} harus berada di dalam blok `pilih`")
+            if line.startswith("tangkap") or line == "akhirnya":
+                raise BMError(f"`{line}` pada baris {lineno} harus berada di dalam blok `coba`")
             # paket "modul" (sebagai alias)?
             m = re.match(r'^paket\s+(["\"][^"\"]+["\"])\s*(?:sebagai|as)\s*([A-Za-z_][A-Za-z0-9_]*)\s*$', line)
             if m:
@@ -481,21 +511,21 @@ def parse_program(src:str):
             if m:
                 name=m.group(1); args_str=m.group(2).strip()
                 args=[a.strip() for a in args_str.split(",")] if args_str else []
-                body = parse_block(stop_tokens=["akhir"])
+                body = parse_block(stop_tokens=["akhir"], opener_name=f"asinkron fungsi {name}", opener_line=lineno)
                 stmts.append(AsyncFuncDef(name,args,body,lineno)); continue
             m = re.match(r"^fungsi\s+([A-Za-z_][A-Za-z0-9_]*)\s*\((.*?)\)\s*$", line)
             if m:
                 name=m.group(1); args_str=m.group(2).strip()
                 args=[a.strip() for a in args_str.split(",")] if args_str else []
-                body = parse_block(stop_tokens=["akhir"])
+                body = parse_block(stop_tokens=["akhir"], opener_name=f"fungsi {name}", opener_line=lineno)
                 stmts.append(FuncDef(name,args,body,lineno)); continue
             m = re.match(r"^kelas\s+([A-Za-z_][A-Za-z0-9_]*)\s*$", line)
             if m:
                 name=m.group(1)
-                body = parse_block(stop_tokens=["akhir"])
+                body = parse_block(stop_tokens=["akhir"], opener_name=f"kelas {name}", opener_line=lineno)
                 stmts.append(ClassDef(name,body,lineno)); continue
             if line == "coba" or line == "coba maka":
-                collected = collect_until_akhir()
+                collected = collect_until_akhir("coba", lineno)
                 sep_indices = top_level_separator_indices(
                     collected,
                     lambda txt: txt.startswith("tangkap") or txt == "akhirnya"
@@ -522,7 +552,7 @@ def parse_program(src:str):
             if line.startswith("jika "):
                 cond = line[len("jika "):].strip()
                 if cond.endswith(" maka"): cond = cond[:-len(" maka")].strip()
-                collected=collect_until_akhir()
+                collected=collect_until_akhir("jika", lineno)
                 sep_indices = top_level_separator_indices(
                     collected,
                     lambda txt: is_elif_line(txt) or txt == "lain"
@@ -558,7 +588,7 @@ def parse_program(src:str):
             if line.startswith("pilih "):
                 expr = line[len("pilih "):].strip()
                 if expr.endswith(" maka"): expr = expr[:-len(" maka")].strip()
-                collected=collect_until_akhir()
+                collected=collect_until_akhir("pilih", lineno)
                 sep_indices = top_level_separator_indices(
                     collected,
                     lambda txt: txt.startswith("saat ") or txt == "bawaan"
@@ -578,27 +608,27 @@ def parse_program(src:str):
             m = re.match(r"^selama\s+(.*?)\s+(?:maka|lakukan)\s*$", line)
             if m:
                 cond = m.group(1).strip()
-                body = parse_block(stop_tokens=["akhir"])
+                body = parse_block(stop_tokens=["akhir"], opener_name="selama", opener_line=lineno)
                 stmts.append(WhileStmt(cond, body, lineno)); continue
             m = re.match(r"^setiap\s+([A-Za-z_][A-Za-z0-9_]*)\s+(?:dalam|di)\s+(.*?)\s+lakukan\s*$", line)
             if m:
                 var=m.group(1); iterable=m.group(2).strip()
-                body = parse_block(stop_tokens=["akhir"])
+                body = parse_block(stop_tokens=["akhir"], opener_name="setiap", opener_line=lineno)
                 stmts.append(ForEachStmt(var,iterable,body,lineno)); continue
             m = re.match(r"^untuk\s+([A-Za-z_][A-Za-z0-9_]*)\s+(?:dalam|di)\s+(.*?)\s+lakukan\s*$", line)
             if m:
                 var=m.group(1); iterable=m.group(2).strip()
-                body = parse_block(stop_tokens=["akhir"])
+                body = parse_block(stop_tokens=["akhir"], opener_name="untuk", opener_line=lineno)
                 stmts.append(ForEachStmt(var,iterable,body,lineno)); continue
             m = re.match(r"^untuk\s+([A-Za-z_][A-Za-z0-9_]*)\s+dari\s+(.*?)\s+sampai\s+(.*?)\s+lakukan\s*$", line)
             if m:
                 var=m.group(1); start=m.group(2).strip(); end=m.group(3).strip()
-                body = parse_block(stop_tokens=["akhir"])
+                body = parse_block(stop_tokens=["akhir"], opener_name="untuk", opener_line=lineno)
                 stmts.append(ForStmt(var,start,end,body,lineno)); continue
             m = re.match(r"^ulangi\s+(.*?)\s+kali\s+lakukan\s*$", line)
             if m:
                 count=m.group(1).strip()
-                body = parse_block(stop_tokens=["akhir"])
+                body = parse_block(stop_tokens=["akhir"], opener_name="ulangi", opener_line=lineno)
                 stmts.append(RepeatStmt(count,body,lineno)); continue
             if line.startswith("cetak "):
                 expr=line[len("cetak "):].strip(); stmts.append(PrintStmt(expr, lineno)); continue
@@ -628,6 +658,10 @@ def parse_program(src:str):
                     stmts.append(AwaitAssignStmt(left,right[len("tunggu "):].strip(),lineno)); continue
                 stmts.append(AssignStmt(left,right,lineno)); continue
             stmts.append(ExprStmt(line, lineno))
+        if stop_tokens:
+            info_baris = f" pada baris {opener_line}" if opener_line is not None else ""
+            nama = opener_name or "blok"
+            raise BMError(f"Blok `{nama}`{info_baris} belum ditutup dengan `akhir`")
         return stmts
     i=0
     return parse_block()
@@ -654,7 +688,7 @@ class Interpreter:
         self.builtins:Dict[str,Any] = {
             "len":len, "int":int, "float":float, "str":str, "range":range, "print":print,
             "abs": abs, "min": min, "max": max, "round": round,
-            "panjang": len, "angka": int, "pecahan": float, "teks": str, "rentang": range,
+            "panjang": len, "angka": _bm_angka, "pecahan": _bm_pecahan, "teks": str, "rentang": range,
             "mutlak": abs, "terkecil": min, "terbesar": max, "bulatkan": round,
             "rapikan": _bm_rapikan, "kecil": _bm_kecil, "besar": _bm_besar,
             "ganti": _bm_ganti, "pisah": _bm_pisah, "gabung": _bm_gabung,
@@ -1193,8 +1227,12 @@ def transpile_to_python(src:str) -> str:
     indonesian_aliases = [
         "jeda = asyncio.sleep",
         "panjang = len",
-        "angka = int",
-        "pecahan = float",
+        "def angka(nilai):",
+        "    try: return int(nilai)",
+        "    except Exception: raise ValueError(f\"angka() gagal: '{nilai}' bukan bilangan bulat\")",
+        "def pecahan(nilai):",
+        "    try: return float(nilai)",
+        "    except Exception: raise ValueError(f\"pecahan() gagal: '{nilai}' bukan bilangan pecahan\")",
         "teks = str",
         "rentang = range",
         "mutlak = abs",
