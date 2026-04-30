@@ -30,6 +30,7 @@ Checklist:
 - [x] Panduan pemula punya alur instalasi, input, percabangan, loop, fungsi, data, file, dan mini project.
 - [x] Dokumen keamanan playground menjelaskan mode aman dan mode unsafe.
 - [x] Playground menjalankan kode user di worker process dengan timeout.
+- [x] Sintaks pemula dibuat lebih lentur tanpa mengganti gaya lama.
 - [x] Semua demo non-interaktif jalan lewat `examples/run_all_demos.bm`.
 - [x] `python -m pytest` hijau.
 - [x] Build paket dan `twine check` hijau.

@@ -71,10 +71,9 @@ Jangan aktifkan mode unsafe untuk playground publik.
 ## Quickstart Pemula
 
 ```
-cetak "Masukkan nama:"
-baca nama
+tanya Nama kamu: sebagai nama
 
-jika panjang(nama) == 0 maka
+jika panjang(nama) == 0
     cetak "Halo, teman!"
 lain
     cetak "Halo, {nama}!"
@@ -95,6 +94,8 @@ bm jalankan hello.bm
 - Komentar: baris penuh atau komentar inline dengan `#`
 - Interpolasi string: `"Halo, {nama}"` (ekspresi di dalam `{...}` aman & didukung)
 - Alias lama `elif` masih bisa dipakai, tetapi untuk kode baru disarankan `lain jika`.
+- Beberapa kata penanda seperti `maka` dan `lakukan` boleh ditulis atau dihilangkan untuk kode pemula yang lebih singkat.
+- `cetak Halo dunia` dan `tanya Nama kamu: sebagai nama` bisa dipakai untuk teks biasa tanpa tanda kutip.
 
 ## Fungsi Dasar Berbahasa Indonesia
 
@@ -152,7 +153,7 @@ akhir
 Untuk mengulang sejumlah kali:
 
 ```bm
-ulangi 3 kali lakukan
+ulangi 3
     cetak "Belajar Bahasa Manis"
 akhir
 ```
@@ -194,7 +195,7 @@ Loop `selama` juga bisa memakai kata `lakukan`:
 ```bm
 jumlah = 0
 
-selama jumlah < 3 lakukan
+selama jumlah < 3
     jumlah = jumlah + 1
 akhir
 ```

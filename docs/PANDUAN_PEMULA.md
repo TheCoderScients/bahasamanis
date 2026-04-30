@@ -39,11 +39,12 @@ bm jalankan halo.bm
 ## 3. Input
 
 ```bm
-tanya "Nama kamu: " sebagai nama
+tanya Nama kamu: sebagai nama
 cetak "Halo, {nama}!"
 ```
 
 `tanya` cocok untuk pemula karena prompt dan input jadi satu baris.
+Untuk prompt teks biasa, tanda kutip boleh dihilangkan.
 
 ## 4. Percabangan
 
@@ -51,7 +52,7 @@ cetak "Halo, {nama}!"
 tanya "Nilai: " sebagai nilai
 nilai = angka(nilai)
 
-jika nilai >= 75 maka
+jika nilai >= 75
     cetak "Lulus"
 lain
     cetak "Belum lulus"
@@ -88,7 +89,7 @@ Untuk membaca isi daftar:
 ```bm
 nama = ["Sari", "Budi", "Ayu"]
 
-setiap item dalam nama lakukan
+setiap item dalam nama
     cetak "Halo, {item}"
 akhir
 ```
@@ -159,6 +160,14 @@ pilih menu
         akhir
     bawaan
         cetak "Menu tidak tersedia."
+akhir
+```
+
+Kalau fungsi tidak punya parameter, tanda kurung boleh dihilangkan:
+
+```bm
+fungsi halo
+    kembali "Halo!"
 akhir
 ```
 

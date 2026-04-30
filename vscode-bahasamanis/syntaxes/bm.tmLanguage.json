@@ -28,7 +28,7 @@
     },
     "keywords": {
       "patterns": [
-        { "name": "keyword.control.bm", "match": "\\b(lain\\s+jika|jika|elif|lain|akhir|pilih|saat|bawaan|selama|untuk|setiap|ulangi|fungsi|kelas|ini|kembali|lanjut|lanjutkan|henti|berhenti|lewati|coba|tangkap|akhirnya|lempar|gagal|asinkron|async|tunggu)\\b" },
+        { "name": "keyword.control.bm", "match": "\\b(lain\\s+jika|jika|elif|maka|lakukan|lain|akhir|pilih|saat|bawaan|selama|untuk|setiap|ulangi|fungsi|kelas|ini|kembali|lanjut|lanjutkan|henti|berhenti|lewati|coba|tangkap|akhirnya|lempar|gagal|asinkron|async|tunggu)\\b" },
         { "name": "constant.language.boolean.bm", "match": "\\b(benar|salah)\\b" },
         { "name": "constant.language.null.bm", "match": "\\b(kosong)\\b" },
         { "name": "keyword.operator.logical.bm", "match": "\\b(dan|atau|tidak|dalam)\\b" },

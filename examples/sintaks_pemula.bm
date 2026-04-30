@@ -1,0 +1,30 @@
+# Contoh sintaks pemula yang lebih santai
+
+cetak Halo, Indonesia!
+
+fungsi salam
+    kembali "Bahasa Manis makin mudah dibaca."
+akhir
+
+cetak salam()
+
+nilai = 0
+
+jika benar
+    cetak Kondisi benar
+akhir
+
+selama nilai < 2
+    nilai = nilai + 1
+akhir
+
+cetak "Nilai akhir: {nilai}"
+
+nama = ["Sari", "Budi"]
+setiap item dalam nama
+    cetak "Halo, {item}"
+akhir
+
+ulangi 2
+    cetak Semangat belajar!
+akhir

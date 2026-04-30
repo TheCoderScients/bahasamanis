@@ -21,6 +21,10 @@ cetak "==== MULAI: data_loop.bm ===="
 pakai "data_loop.bm"
 cetak "==== SELESAI: data_loop.bm ===="
 
+cetak "==== MULAI: sintaks_pemula.bm ===="
+pakai "sintaks_pemula.bm"
+cetak "==== SELESAI: sintaks_pemula.bm ===="
+
 cetak "==== MULAI: berkas_demo.bm ===="
 pakai "berkas_demo.bm"
 cetak "==== SELESAI: berkas_demo.bm ===="

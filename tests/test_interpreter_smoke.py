@@ -93,6 +93,55 @@ akhir
     captured = capsys.readouterr()
     assert "B" in captured.out
 
+def test_friendly_beginner_syntax_sugar(capsys):
+    src = '''
+cetak Halo, Indonesia!
+
+fungsi halo
+    kembali "Halo dari fungsi"
+akhir
+
+cetak halo()
+
+nilai = 0
+jika benar lakukan
+    cetak Cabang benar
+akhir
+
+selama nilai < 2
+    nilai = nilai + 1
+akhir
+
+data = ["A", "B"]
+setiap item dalam data
+    cetak item
+akhir
+
+ulangi 2
+    cetak ulang lagi
+akhir
+'''
+    it = Interpreter()
+    it.run(src)
+    captured = capsys.readouterr()
+    assert "Halo, Indonesia!" in captured.out
+    assert "Halo dari fungsi" in captured.out
+    assert "Cabang benar" in captured.out
+    assert "A" in captured.out
+    assert "B" in captured.out
+    assert captured.out.count("ulang lagi") == 2
+
+def test_friendly_tanya_prompt_without_quotes(capsys):
+    src = '''
+tanya Nama kamu: sebagai nama
+cetak "Halo, {nama}"
+'''
+    it = Interpreter()
+    it.input_func = lambda: "Sari"
+    it.run(src)
+    captured = capsys.readouterr()
+    assert "Nama kamu: Halo, Sari" in captured.out
+
 def test_indonesian_builtin_aliases(capsys):
     src = '''
 nama = rapikan("  Budi  ")
@@ -183,11 +232,13 @@ akhir
 
 s = Siswa("Budi", 88)
 cetak s.info()
+cetak s.nama
 '''
     it = Interpreter()
     it.run(src)
     captured = capsys.readouterr()
     assert "Budi: 88" in captured.out
+    assert captured.out.strip().splitlines()[-1] == "Budi"
 
 def test_ini_can_still_be_regular_variable_outside_class(capsys):
     src = '''
@@ -462,3 +513,19 @@ akhir
     assert "menu = input()" in py
     assert "__bm_pilih_" in py
     assert "== \"1\":" in py
+
+def test_transpile_friendly_beginner_syntax():
+    src = '''
+cetak Halo dunia!
+fungsi halo
+    kembali "ok"
+akhir
+selama benar
+    berhenti
+akhir
+'''
+    py = transpile_to_python(src)
+    assert "print(" in py
+    assert "Halo dunia!" in py
+    assert "def halo():" in py
+    assert "while True:" in py

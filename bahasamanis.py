@@ -414,6 +414,45 @@ def _split_eq_outside_quotes(s:str):
             left=s[:i].strip(); right=s[i+1:].strip(); return left,right
     return s.strip(), None
 
+def _strip_block_suffix(text: str) -> str:
+    text = text.strip()
+    for suffix in ("maka", "lakukan"):
+        marker = " " + suffix
+        if text.endswith(marker):
+            return text[:-len(marker)].strip()
+    return text
+
+def _is_quoted_expr(text: str) -> bool:
+    text = text.strip()
+    return len(text) >= 2 and text[0] == text[-1] and text[0] in "\"'"
+
+def _looks_like_single_name(text: str) -> bool:
+    return re.match(r"^[A-Za-z_][A-Za-z0-9_]*$", text.strip()) is not None
+
+def _looks_like_attribute_expr(text: str) -> bool:
+    return re.match(r"^[A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)+$", text.strip()) is not None
+
+def _normalize_friendly_text_expr(text: str) -> str:
+    raw = text.strip()
+    if not raw or _is_quoted_expr(raw) or _looks_like_single_name(raw) or _looks_like_attribute_expr(raw):
+        return raw
+    if re.search(r"[=+\-*/%<>(){}\[\]]", raw):
+        return raw
+    if " " in raw or re.search(r"[,.!?:;]", raw):
+        return repr(raw)
+    return raw
+
+def _normalize_friendly_prompt_expr(text: str) -> str:
+    raw = text.strip()
+    if (
+        raw.endswith(":")
+        and not _is_quoted_expr(raw)
+        and not _looks_like_single_name(raw)
+        and not re.search(r"[=+\-*/%<>(){}\[\]]", raw)
+    ):
+        return repr(raw + " ")
+    return _normalize_friendly_text_expr(raw)
+
 def parse_program(src:str):
     raw_lines = src.splitlines()
     lines=[]
@@ -507,15 +546,15 @@ def parse_program(src:str):
                 path = m.group(1)[1:-1]
                 alias = m.group(3) if m.group(2) else None
                 stmts.append(ImportBMStmt(path, alias, lineno)); continue
-            m = re.match(r"^(?:fungsi\s+(?:asinkron|async)|(?:asinkron|async)\s+fungsi)\s+([A-Za-z_][A-Za-z0-9_]*)\s*\((.*?)\)\s*$", line)
+            m = re.match(r"^(?:fungsi\s+(?:asinkron|async)|(?:asinkron|async)\s+fungsi)\s+([A-Za-z_][A-Za-z0-9_]*)(?:\s*\((.*?)\))?\s*$", line)
             if m:
-                name=m.group(1); args_str=m.group(2).strip()
+                name=m.group(1); args_str=(m.group(2) or "").strip()
                 args=[a.strip() for a in args_str.split(",")] if args_str else []
                 body = parse_block(stop_tokens=["akhir"], opener_name=f"asinkron fungsi {name}", opener_line=lineno)
                 stmts.append(AsyncFuncDef(name,args,body,lineno)); continue
-            m = re.match(r"^fungsi\s+([A-Za-z_][A-Za-z0-9_]*)\s*\((.*?)\)\s*$", line)
+            m = re.match(r"^fungsi\s+([A-Za-z_][A-Za-z0-9_]*)(?:\s*\((.*?)\))?\s*$", line)
             if m:
-                name=m.group(1); args_str=m.group(2).strip()
+                name=m.group(1); args_str=(m.group(2) or "").strip()
                 args=[a.strip() for a in args_str.split(",")] if args_str else []
                 body = parse_block(stop_tokens=["akhir"], opener_name=f"fungsi {name}", opener_line=lineno)
                 stmts.append(FuncDef(name,args,body,lineno)); continue
@@ -551,7 +590,7 @@ def parse_program(src:str):
                 stmts.append(TryStmt(body,error_name,catch_body,finally_body,lineno)); continue
             if line.startswith("jika "):
                 cond = line[len("jika "):].strip()
-                if cond.endswith(" maka"): cond = cond[:-len(" maka")].strip()
+                cond = _strip_block_suffix(cond)
                 collected=collect_until_akhir("jika", lineno)
                 sep_indices = top_level_separator_indices(
                     collected,
@@ -568,7 +607,7 @@ def parse_program(src:str):
                                 c = txt[len("lain jika "):].strip()
                             else:
                                 c = txt[len("elif "):].strip()
-                            if c.endswith(" maka"): c = c[:-len(" maka")].strip()
+                            c = _strip_block_suffix(c)
                             body_slice = collected[idxc+1:end_idx]
                             segments.append(("elif", c, body_slice))
                         else:
@@ -587,7 +626,7 @@ def parse_program(src:str):
                     stmts.append(IfStmt([(cond, then_block)], lineno)); continue
             if line.startswith("pilih "):
                 expr = line[len("pilih "):].strip()
-                if expr.endswith(" maka"): expr = expr[:-len(" maka")].strip()
+                expr = _strip_block_suffix(expr)
                 collected=collect_until_akhir("pilih", lineno)
                 sep_indices = top_level_separator_indices(
                     collected,
@@ -602,39 +641,39 @@ def parse_program(src:str):
                             cases.append((None, parse_block_from_list(body_slice)))
                         else:
                             case_expr = txt[len("saat "):].strip()
-                            if case_expr.endswith(" maka"): case_expr = case_expr[:-len(" maka")].strip()
+                            case_expr = _strip_block_suffix(case_expr)
                             cases.append((case_expr, parse_block_from_list(body_slice)))
                 stmts.append(SwitchStmt(expr,cases,lineno)); continue
-            m = re.match(r"^selama\s+(.*?)\s+(?:maka|lakukan)\s*$", line)
+            m = re.match(r"^selama\s+(.+?)(?:\s+(?:maka|lakukan))?\s*$", line)
             if m:
                 cond = m.group(1).strip()
                 body = parse_block(stop_tokens=["akhir"], opener_name="selama", opener_line=lineno)
                 stmts.append(WhileStmt(cond, body, lineno)); continue
-            m = re.match(r"^setiap\s+([A-Za-z_][A-Za-z0-9_]*)\s+(?:dalam|di)\s+(.*?)\s+lakukan\s*$", line)
+            m = re.match(r"^setiap\s+([A-Za-z_][A-Za-z0-9_]*)\s+(?:dalam|di)\s+(.+?)(?:\s+lakukan)?\s*$", line)
             if m:
                 var=m.group(1); iterable=m.group(2).strip()
                 body = parse_block(stop_tokens=["akhir"], opener_name="setiap", opener_line=lineno)
                 stmts.append(ForEachStmt(var,iterable,body,lineno)); continue
-            m = re.match(r"^untuk\s+([A-Za-z_][A-Za-z0-9_]*)\s+(?:dalam|di)\s+(.*?)\s+lakukan\s*$", line)
+            m = re.match(r"^untuk\s+([A-Za-z_][A-Za-z0-9_]*)\s+(?:dalam|di)\s+(.+?)(?:\s+lakukan)?\s*$", line)
             if m:
                 var=m.group(1); iterable=m.group(2).strip()
                 body = parse_block(stop_tokens=["akhir"], opener_name="untuk", opener_line=lineno)
                 stmts.append(ForEachStmt(var,iterable,body,lineno)); continue
-            m = re.match(r"^untuk\s+([A-Za-z_][A-Za-z0-9_]*)\s+dari\s+(.*?)\s+sampai\s+(.*?)\s+lakukan\s*$", line)
+            m = re.match(r"^untuk\s+([A-Za-z_][A-Za-z0-9_]*)\s+dari\s+(.*?)\s+sampai\s+(.+?)(?:\s+lakukan)?\s*$", line)
             if m:
                 var=m.group(1); start=m.group(2).strip(); end=m.group(3).strip()
                 body = parse_block(stop_tokens=["akhir"], opener_name="untuk", opener_line=lineno)
                 stmts.append(ForStmt(var,start,end,body,lineno)); continue
-            m = re.match(r"^ulangi\s+(.*?)\s+kali\s+lakukan\s*$", line)
+            m = re.match(r"^ulangi\s+(.+?)(?:\s+kali)?(?:\s+lakukan)?\s*$", line)
             if m:
                 count=m.group(1).strip()
                 body = parse_block(stop_tokens=["akhir"], opener_name="ulangi", opener_line=lineno)
                 stmts.append(RepeatStmt(count,body,lineno)); continue
             if line.startswith("cetak "):
-                expr=line[len("cetak "):].strip(); stmts.append(PrintStmt(expr, lineno)); continue
+                expr=_normalize_friendly_text_expr(line[len("cetak "):].strip()); stmts.append(PrintStmt(expr, lineno)); continue
             m = re.match(r"^tanya\s+(.+?)\s+sebagai\s+([A-Za-z_][A-Za-z0-9_]*)\s*$", line)
             if m:
-                prompt_expr=m.group(1).strip(); varname=m.group(2)
+                prompt_expr=_normalize_friendly_prompt_expr(m.group(1).strip()); varname=m.group(2)
                 stmts.append(PromptInputStmt(prompt_expr,varname,lineno)); continue
             if line.startswith("baca "):
                 var=line[len("baca "):].strip(); stmts.append(InputStmt(var, lineno)); continue

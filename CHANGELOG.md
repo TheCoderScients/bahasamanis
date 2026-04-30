@@ -17,6 +17,9 @@ Sudah dikerjakan:
 - Playground menjalankan kode user di worker process terpisah.
 - Playground punya timeout eksekusi lewat `BM_PLAYGROUND_TIMEOUT_SECONDS`.
 - Output playground dipotong dari dalam worker supaya lebih stabil.
+- Sintaks pemula dibuat lebih lentur tanpa menghapus gaya lama: `maka/lakukan` bisa dihilangkan di beberapa blok.
+- Fungsi tanpa parameter bisa ditulis `fungsi halo`.
+- `cetak Halo dunia` dan `tanya Nama kamu: sebagai nama` bisa dipakai untuk teks biasa tanpa tanda kutip.
 
 Target utama:
 
