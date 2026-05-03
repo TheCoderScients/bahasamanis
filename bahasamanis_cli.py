@@ -20,6 +20,7 @@ from pathlib import Path
 from bahasamanis import __version__, Interpreter, parse_program, transpile_to_python
 
 SKIP_DIRS = {'.git', '.hg', '.svn', '.venv', 'venv', '__pycache__', 'dist', 'build'}
+MAIN_FILE_NAMES = ('utama.bm', 'main.bm', 'app.bm', 'program.bm')
 
 def find_project_root(start: Path | None = None) -> Path | None:
     current = (start or Path.cwd()).resolve()
@@ -81,6 +82,56 @@ def iter_bm_files(target: Path):
         files.append(path)
     return files
 
+def is_test_file(path: Path) -> bool:
+    name = path.name.lower()
+    return (
+        name.startswith('tes_')
+        or name.startswith('test_')
+        or name.endswith('_tes.bm')
+        or name.endswith('_test.bm')
+    )
+
+def iter_test_files(target: Path):
+    if target.is_file():
+        return [target] if target.suffix == '.bm' and is_test_file(target) else []
+    if not target.exists():
+        return []
+    files = []
+    tests_dir = target / 'tests'
+    if tests_dir.is_dir():
+        files.extend(iter_bm_files(tests_dir))
+    files.extend(path for path in iter_bm_files(target) if is_test_file(path))
+    seen = set()
+    unique = []
+    for path in files:
+        key = str(path.resolve())
+        if key not in seen:
+            seen.add(key)
+            unique.append(path)
+    return unique
+
+def infer_main_file(root: Path | None = None) -> Path | None:
+    root = (root or Path.cwd()).resolve()
+    for name in MAIN_FILE_NAMES:
+        candidate = root / name
+        if candidate.is_file():
+            return candidate
+    for name in MAIN_FILE_NAMES:
+        candidate = root / 'src' / name
+        if candidate.is_file():
+            return candidate
+    top_level = sorted(path for path in root.glob('*.bm') if path.is_file())
+    if len(top_level) == 1:
+        return top_level[0]
+    return None
+
+def rel_display(path: Path, root: Path | None = None) -> str:
+    base = (root or Path.cwd()).resolve()
+    try:
+        return str(path.resolve().relative_to(base))
+    except ValueError:
+        return str(path)
+
 def run_bm_file(path: Path):
     with open(path, 'r', encoding='utf-8') as f:
         src = f.read()
@@ -106,11 +157,15 @@ def run_bm_file(path: Path):
 def cmd_run(path: str | None = None) -> int:
     if not path:
         project = load_project()
-        if not project:
-            print("[Error] Butuh FILE untuk dijalankan, atau jalankan dari proyek yang punya bm.toml.", file=sys.stderr)
-            return 1
-        root, config = project
-        path = str(root / project_value(config, 'proyek', 'utama', 'src/utama.bm'))
+        if project:
+            root, config = project
+            path = str(root / project_value(config, 'proyek', 'utama', 'src/utama.bm'))
+        else:
+            inferred = infer_main_file()
+            if not inferred:
+                print("[Error] Butuh FILE untuk dijalankan, atau sediakan satu file utama seperti utama.bm/main.bm.", file=sys.stderr)
+                return 1
+            path = str(inferred)
     try:
         run_bm_file(Path(path))
     except Exception as e:
@@ -121,11 +176,15 @@ def cmd_run(path: str | None = None) -> int:
 def cmd_transpile(path: str | None = None, out: str | None = None) -> int:
     if not path:
         project = load_project()
-        if not project:
-            print("[Error] Butuh FILE untuk diubah, atau jalankan dari proyek yang punya bm.toml.", file=sys.stderr)
-            return 1
-        root, config = project
-        path = str(root / project_value(config, 'proyek', 'utama', 'src/utama.bm'))
+        if project:
+            root, config = project
+            path = str(root / project_value(config, 'proyek', 'utama', 'src/utama.bm'))
+        else:
+            inferred = infer_main_file()
+            if not inferred:
+                print("[Error] Butuh FILE untuk diubah, atau sediakan satu file utama seperti utama.bm/main.bm.", file=sys.stderr)
+                return 1
+            path = str(inferred)
     with open(path, 'r', encoding='utf-8') as f:
         src = f.read()
     py = transpile_to_python(src)
@@ -253,13 +312,16 @@ def cmd_test(path: str | None = None) -> int:
         root, config = project
         target = root / project_value(config, 'tes', 'path', 'tests')
     else:
-        target = Path('tests')
+        target = Path.cwd()
     if path and target.is_dir() and (target / 'tests').is_dir():
         target = target / 'tests'
-    files = iter_bm_files(target)
+    files = iter_bm_files(target) if project or path else iter_test_files(target)
     if not files:
-        print(f"[Error] Tidak ada test .bm di '{target}'.", file=sys.stderr)
-        return 1
+        if project or path:
+            print(f"[Error] Tidak ada test .bm di '{target}'.", file=sys.stderr)
+            return 1
+        print("Belum ada test .bm di folder ini. Buat tests/tes_utama.bm atau pakai `bm cek` untuk validasi cepat.")
+        return 0
     failed = 0
     for file in files:
         try:
@@ -277,8 +339,23 @@ def cmd_test(path: str | None = None) -> int:
 def cmd_info() -> int:
     project = load_project()
     if not project:
-        print('[Error] bm.toml tidak ditemukan dari folder ini.', file=sys.stderr)
-        return 1
+        root = Path.cwd().resolve()
+        files = iter_bm_files(root)
+        tests = iter_test_files(root)
+        main_file = infer_main_file(root)
+        print('Mode        : folder biasa (tanpa bm.toml)')
+        print(f'Folder      : {root}')
+        print(f'File BM     : {len(files)}')
+        if main_file:
+            print(f'File utama  : {rel_display(main_file, root)}')
+            print('Jalankan    : bm jalankan')
+        else:
+            print('File utama  : belum tertebak')
+            print('Jalankan    : bm jalankan nama_file.bm')
+        print(f'Test BM     : {len(tests)}')
+        print('Cek         : bm cek')
+        print('Catatan     : buat bm.toml dengan `bm buat nama_proyek` untuk mode proyek penuh.')
+        return 0
     root, config = project
     name = project_value(config, 'proyek', 'nama', root.name)
     version = project_value(config, 'proyek', 'versi', '-')

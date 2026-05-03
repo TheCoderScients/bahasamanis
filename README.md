@@ -70,6 +70,17 @@ bm cek
 bm tes
 ```
 
+Folder biasa tanpa `bm.toml` tetap bisa dipakai:
+
+```
+bm info
+bm cek
+bm jalankan nama_file.bm
+```
+
+Jika folder hanya punya satu file `.bm`, atau punya `utama.bm`/`main.bm`,
+`bm jalankan` bisa dipakai tanpa menulis nama file.
+
 Jika `bm` sudah ada tetapi muncul `ModuleNotFoundError: No module named 'bahasamanis_cli'`,
 berarti script `bm` dan paket Bahasa Manis tidak berada di environment Python yang sama,
 atau instalasi editable masih menunjuk ke folder source lama. Pasang ulang dari folder repo:

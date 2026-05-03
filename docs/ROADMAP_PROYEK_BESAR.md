@@ -42,6 +42,7 @@ Bahasa Manis dianggap siap untuk proyek besar jika:
 - [x] `bm.toml` mulai dipakai oleh CLI.
 - [x] `bm info` menampilkan konfigurasi proyek.
 - [x] `bm jalankan` tanpa file memakai `utama` dari `bm.toml`.
+- [x] Folder biasa tanpa `bm.toml` tetap bisa memakai `bm info`, `bm cek`, `bm tes`, dan `bm jalankan`.
 - [ ] `bm ubah` punya output default berbasis `bm.toml`.
 - [ ] `bm cek` punya mode ketat untuk CI.
 - [ ] `bm tes` punya ringkasan test yang lebih rapi.

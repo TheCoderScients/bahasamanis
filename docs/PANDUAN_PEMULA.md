@@ -61,6 +61,16 @@ bm tes
 `bm tes` menjalankan file test `.bm` di folder `tests`.
 `bm jalankan` otomatis membaca file utama dari `bm.toml` kalau dijalankan dari folder proyek.
 
+Kalau folder kamu belum punya `bm.toml`, tetap bisa dipakai:
+
+```bash
+bm info
+bm cek
+bm jalankan nama_file.bm
+```
+
+Jika folder hanya punya satu file `.bm`, `bm jalankan` bisa langsung menebak file itu.
+
 ## 4. Input
 
 ```bm

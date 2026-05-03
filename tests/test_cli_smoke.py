@@ -87,3 +87,33 @@ def test_cli_jalankan_without_file_needs_project():
     result = run_cli("jalankan")
     assert result.returncode == 1
     assert "Butuh FILE" in result.stderr
+
+def test_cli_folder_mode_info_run_and_empty_tests(tmp_path):
+    app = tmp_path / "folder_biasa"
+    app.mkdir()
+    (app / "morino_cyber_dungeon.bm").write_text('cetak "jalan dari folder biasa"\n', encoding="utf-8")
+
+    info = run_cli("info", cwd=app)
+    assert info.returncode == 0
+    assert "folder biasa" in info.stdout
+    assert "morino_cyber_dungeon.bm" in info.stdout
+
+    run = run_cli("jalankan", cwd=app)
+    assert run.returncode == 0
+    assert "jalan dari folder biasa" in run.stdout
+
+    test = run_cli("tes", cwd=app)
+    assert test.returncode == 0
+    assert "Belum ada test" in test.stdout
+
+def test_cli_folder_mode_finds_test_files(tmp_path):
+    app = tmp_path / "folder_tes"
+    tests = app / "tests"
+    tests.mkdir(parents=True)
+    (app / "utama.bm").write_text('cetak "utama"\n', encoding="utf-8")
+    (tests / "tes_utama.bm").write_text('cetak "tes folder biasa"\n', encoding="utf-8")
+
+    result = run_cli("tes", cwd=app)
+    assert result.returncode == 0
+    assert "tes folder biasa" in result.stdout
+    assert "test BM lulus" in result.stdout

@@ -25,6 +25,7 @@ Sudah dikerjakan:
 - `bm jalankan` sekarang memberi exit code gagal saat runtime error terjadi.
 - Roadmap proyek besar ditambahkan sebagai checklist lengkap.
 - `bm.toml` mulai dipakai oleh CLI lewat `bm info` dan `bm jalankan` tanpa file.
+- Folder biasa tanpa `bm.toml` tetap didukung oleh `bm info`, `bm cek`, `bm tes`, dan tebakan file utama untuk `bm jalankan`.
 
 Target utama:
 
