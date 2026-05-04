@@ -29,6 +29,10 @@ cetak "==== MULAI: csv_demo.bm ===="
 pakai "csv_demo.bm"
 cetak "==== SELESAI: csv_demo.bm ===="
 
+cetak "==== MULAI: uji_demo.bm ===="
+pakai "uji_demo.bm"
+cetak "==== SELESAI: uji_demo.bm ===="
+
 cetak "==== MULAI: data_loop.bm ===="
 pakai "data_loop.bm"
 cetak "==== SELESAI: data_loop.bm ===="

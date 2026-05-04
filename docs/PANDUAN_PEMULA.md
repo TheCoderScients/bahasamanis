@@ -183,7 +183,25 @@ cetak baca_berkas(path)
 
 Catatan: helper berkas dimatikan di mode aman playground publik.
 
-## 10. Modul Standar Ringkas
+## 10. Test Sederhana
+
+Untuk file di folder `tests`, kamu bisa memakai helper `pastikan`:
+
+```bm
+fungsi tambah(a, b)
+    kembali a + b
+akhir
+
+pastikan_sama(tambah(2, 3), 5, "Tambah harus benar")
+pastikan_benar(tambah(1, 1) == 2)
+cetak "Tes lulus"
+```
+
+Helper yang tersedia: `pastikan`, `pastikan_sama` atau `sama`,
+`pastikan_tidak_sama` atau `tidak_sama`, `pastikan_benar`, dan
+`pastikan_salah`.
+
+## 11. Modul Standar Ringkas
 
 Untuk fitur yang sering dipakai di aplikasi, gunakan modul standar:
 
@@ -191,6 +209,7 @@ Untuk fitur yang sering dipakai di aplikasi, gunakan modul standar:
 pakai "bm_standar/env" sebagai env
 pakai "bm_standar/log" sebagai log
 pakai "bm_standar/csv" sebagai csv
+pakai "bm_standar/uji" sebagai uji
 
 log.atur("INFO")
 log.info("Aplikasi dimulai")
@@ -200,12 +219,14 @@ cetak "Mode: {mode}"
 
 data = [{"nama": "Ayu", "nilai": "90"}]
 cetak csv.bentuk(data, ["nama", "nilai"])
+
+uji.sama(panjang(data), 1)
 ```
 
 Modul yang tersedia sekarang antara lain `json`, `berkas`, `waktu`, `acak`,
-`jaringan`, `env`, `log`, dan `csv`.
+`jaringan`, `env`, `log`, `csv`, dan `uji`.
 
-## 11. Mini Project: Catatan Sederhana
+## 12. Mini Project: Catatan Sederhana
 
 ```bm
 path = "catatan.txt"
@@ -239,7 +260,7 @@ fungsi halo
 akhir
 ```
 
-## 12. Lanjut Belajar
+## 13. Lanjut Belajar
 
 Setelah menguasai dasar:
 

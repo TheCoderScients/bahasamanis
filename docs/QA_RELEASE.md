@@ -32,6 +32,7 @@ bm paket examples
 bm jalankan examples/env_demo.bm
 bm jalankan examples/log_demo.bm
 bm jalankan examples/csv_demo.bm
+bm jalankan examples/uji_demo.bm
 tmpdir=$(mktemp -d)
 cd "$tmpdir"
 bm buat qa_bangun

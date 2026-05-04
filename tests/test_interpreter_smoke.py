@@ -172,10 +172,15 @@ jika panjang("abc") == 3 maka
 lain jika angka("1") == 1 maka
     cetak "lain"
 akhir
+pastikan_sama(1, 1)
+pastikan_benar(benar)
 '''
     py = transpile_to_python(src)
     assert "panjang = len" in py
     assert "elif angka(\"1\") == 1:" in py
+    assert "def pastikan_sama" in py
+    assert "sama = pastikan_sama" in py
+    assert "pastikan_benar(True)" in py
 
 def test_exception_handling_coba_tangkap_akhirnya(capsys):
     src = '''
@@ -194,6 +199,37 @@ akhir
     assert "Tertangkap" in captured.out
     assert "angka() gagal" in captured.out
     assert "Selesai" in captured.out
+
+def test_test_helpers_pastikan_and_aliases(capsys):
+    src = '''
+pastikan(2 + 3 == 5, "matematika dasar")
+pastikan_sama("BM", "BM")
+sama(angka("5"), 5)
+pastikan_tidak_sama("BM", "Python")
+tidak_sama(1, 2)
+pastikan_benar(berisi(["BM"], "BM"))
+pastikan_salah(berisi(["BM"], "Python"))
+
+pakai "bm_standar/uji" sebagai uji
+uji.sama(10, 10)
+uji.tidak_sama(10, 11)
+uji.pastikan_benar(benar)
+uji.pastikan_salah(salah)
+
+cetak "helper uji lulus"
+'''
+    it = Interpreter()
+    it.run(src)
+    captured = capsys.readouterr()
+    assert "helper uji lulus" in captured.out
+
+def test_test_helpers_report_friendly_errors():
+    it = Interpreter()
+    with pytest.raises(BMError, match="Pastikan sama gagal"):
+        it.run('pastikan_sama(1, 2)')
+
+    with pytest.raises(BMError, match="pesan custom"):
+        it.run('pastikan_salah(benar, "pesan custom")')
 
 def test_friendly_name_and_number_errors():
     it = Interpreter()

@@ -1,0 +1,18 @@
+cetak "=== Demo Helper Uji ==="
+
+fungsi tambah(a, b)
+  kembali a + b
+akhir
+
+pastikan(tambah(2, 3) == 5, "Tambah harus benar")
+pastikan_sama(tambah(2, 3), 5)
+sama(besar("bm"), "BM")
+tidak_sama("BM", "Python")
+pastikan_benar(berisi(["BM", "Manis"], "BM"))
+pastikan_salah(berisi(["BM"], "Python"))
+
+pakai "bm_standar/uji" sebagai uji
+uji.sama(tambah(1, 1), 2)
+uji.tidak_sama(tambah(1, 1), 3)
+
+cetak "Semua helper uji lulus"

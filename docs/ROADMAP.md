@@ -40,6 +40,7 @@ Checklist:
 - [x] `bm bangun` membuat output Python dari proyek.
 - [x] `bm paket` menampilkan modul BM dan paket Python yang dipakai proyek.
 - [x] Modul standar `env`, `log`, dan `csv` tersedia.
+- [x] Helper test `pastikan`, `sama`, dan `tidak_sama` tersedia.
 - [x] Semua demo non-interaktif jalan lewat `examples/run_all_demos.bm`.
 - [x] `python -m pytest` hijau.
 - [x] Build paket dan `twine check` hijau.

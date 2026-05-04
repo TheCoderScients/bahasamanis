@@ -54,6 +54,7 @@ def test_cli_buat_cek_tes_project(tmp_path):
     assert (app / "bm.toml").exists()
     assert (app / "src" / "utama.bm").exists()
     assert (app / "tests" / "tes_utama.bm").exists()
+    assert "pastikan_sama" in (app / "tests" / "tes_utama.bm").read_text(encoding="utf-8")
 
     info = run_cli("info", cwd=app)
     assert info.returncode == 0

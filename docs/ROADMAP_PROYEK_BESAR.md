@@ -80,8 +80,8 @@ Bahasa Manis dianggap siap untuk proyek besar jika:
 - [ ] `bm format` untuk format kode otomatis.
 - [ ] `bm cek` mendeteksi sintaks berisiko, bukan hanya parse error.
 - [ ] Pesan warning punya saran perbaikan.
-- [ ] Test BM punya helper `pastikan`.
-- [ ] Test BM punya helper `sama`, `tidak_sama`, `benar`, `salah`.
+- [x] Test BM punya helper `pastikan`.
+- [x] Test BM punya helper `sama`, `tidak_sama`, `pastikan_benar`, dan `pastikan_salah`.
 - [ ] CI template tersedia.
 - [ ] Coverage atau laporan file test dirancang.
 - [ ] Error output punya format stabil untuk editor dan CI.
@@ -146,6 +146,5 @@ Bahasa Manis dianggap siap untuk proyek besar jika:
 
 Urutan kerja paling masuk akal dari kondisi sekarang:
 
-1. Tambah helper test `pastikan`.
-2. Buat contoh proyek besar mini.
-3. Siapkan rilis `1.0.0-rc.1`.
+1. Buat contoh proyek besar mini.
+2. Siapkan rilis `1.0.0-rc.1`.

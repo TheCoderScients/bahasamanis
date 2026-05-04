@@ -298,6 +298,39 @@ def _bm_salin(nilai: Any):
         return nilai.copy()
     return nilai
 
+def _bm_repr(nilai: Any) -> str:
+    return repr(nilai)
+
+def _bm_assert_message(pesan: Any, bawaan: str) -> str:
+    if pesan is None:
+        return bawaan
+    return str(pesan)
+
+def _bm_pastikan(kondisi: Any, pesan: Any = None) -> bool:
+    if not kondisi:
+        raise BMError(_bm_assert_message(pesan, "Pastikan gagal: kondisi bernilai salah"))
+    return True
+
+def _bm_pastikan_sama(kiri: Any, kanan: Any, pesan: Any = None) -> bool:
+    if kiri != kanan:
+        raise BMError(_bm_assert_message(pesan, f"Pastikan sama gagal: {_bm_repr(kiri)} != {_bm_repr(kanan)}"))
+    return True
+
+def _bm_pastikan_tidak_sama(kiri: Any, kanan: Any, pesan: Any = None) -> bool:
+    if kiri == kanan:
+        raise BMError(_bm_assert_message(pesan, f"Pastikan tidak sama gagal: {_bm_repr(kiri)} == {_bm_repr(kanan)}"))
+    return True
+
+def _bm_pastikan_benar(nilai: Any, pesan: Any = None) -> bool:
+    if not nilai:
+        raise BMError(_bm_assert_message(pesan, f"Pastikan benar gagal: {_bm_repr(nilai)} bukan benar"))
+    return True
+
+def _bm_pastikan_salah(nilai: Any, pesan: Any = None) -> bool:
+    if nilai:
+        raise BMError(_bm_assert_message(pesan, f"Pastikan salah gagal: {_bm_repr(nilai)} bukan salah"))
+    return True
+
 def _bm_baca_berkas(path: Any) -> str:
     return Path(str(path)).read_text(encoding="utf-8")
 
@@ -737,6 +770,10 @@ class Interpreter:
             "ambil": _bm_ambil, "atur": _bm_atur, "hapus": _bm_hapus,
             "urutkan": _bm_urutkan, "balik": _bm_balik, "kunci": _bm_kunci,
             "nilai": _bm_nilai, "pasangan": _bm_pasangan, "salin": _bm_salin,
+            "pastikan": _bm_pastikan,
+            "pastikan_sama": _bm_pastikan_sama, "sama": _bm_pastikan_sama,
+            "pastikan_tidak_sama": _bm_pastikan_tidak_sama, "tidak_sama": _bm_pastikan_tidak_sama,
+            "pastikan_benar": _bm_pastikan_benar, "pastikan_salah": _bm_pastikan_salah,
             "jeda": asyncio.sleep,
         }
         self.builtins.update(file_builtins)
@@ -1313,6 +1350,23 @@ def transpile_to_python(src:str) -> str:
         "hapus_file = hapus_berkas",
         "def daftar_berkas(path='.'): return [p.name for p in Path(str(path)).iterdir()]",
         "daftar_file = daftar_berkas",
+        "def pastikan(kondisi, pesan=None):",
+        "    if not kondisi: raise AssertionError(pesan or 'Pastikan gagal: kondisi bernilai salah')",
+        "    return True",
+        "def pastikan_sama(kiri, kanan, pesan=None):",
+        "    if kiri != kanan: raise AssertionError(pesan or f'Pastikan sama gagal: {kiri!r} != {kanan!r}')",
+        "    return True",
+        "sama = pastikan_sama",
+        "def pastikan_tidak_sama(kiri, kanan, pesan=None):",
+        "    if kiri == kanan: raise AssertionError(pesan or f'Pastikan tidak sama gagal: {kiri!r} == {kanan!r}')",
+        "    return True",
+        "tidak_sama = pastikan_tidak_sama",
+        "def pastikan_benar(nilai, pesan=None):",
+        "    if not nilai: raise AssertionError(pesan or f'Pastikan benar gagal: {nilai!r} bukan benar')",
+        "    return True",
+        "def pastikan_salah(nilai, pesan=None):",
+        "    if nilai: raise AssertionError(pesan or f'Pastikan salah gagal: {nilai!r} bukan salah')",
+        "    return True",
     ]
     for alias in indonesian_aliases:
         lines.append(f"{indent}{alias}")

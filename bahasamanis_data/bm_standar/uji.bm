@@ -1,0 +1,52 @@
+# Modul standar: uji
+# Helper test sederhana untuk file di folder tests/.
+
+fungsi pastikan(kondisi, pesan=kosong)
+  jika tidak kondisi maka
+    jika pesan == kosong maka
+      lempar "Pastikan gagal: kondisi bernilai salah"
+    akhir
+    lempar pesan
+  akhir
+  kembali benar
+akhir
+
+fungsi sama(kiri, kanan, pesan=kosong)
+  jika kiri != kanan maka
+    jika pesan == kosong maka
+      lempar "Pastikan sama gagal: {kiri} != {kanan}"
+    akhir
+    lempar pesan
+  akhir
+  kembali benar
+akhir
+
+fungsi tidak_sama(kiri, kanan, pesan=kosong)
+  jika kiri == kanan maka
+    jika pesan == kosong maka
+      lempar "Pastikan tidak sama gagal: {kiri} == {kanan}"
+    akhir
+    lempar pesan
+  akhir
+  kembali benar
+akhir
+
+fungsi pastikan_benar(nilai, pesan=kosong)
+  jika tidak nilai maka
+    jika pesan == kosong maka
+      lempar "Pastikan benar gagal"
+    akhir
+    lempar pesan
+  akhir
+  kembali benar
+akhir
+
+fungsi pastikan_salah(nilai, pesan=kosong)
+  jika nilai maka
+    jika pesan == kosong maka
+      lempar "Pastikan salah gagal"
+    akhir
+    lempar pesan
+  akhir
+  kembali benar
+akhir
