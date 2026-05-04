@@ -28,6 +28,12 @@ bm jalankan examples/output_demo.bm
 bm ubah examples/output_demo.bm -o /tmp/output_demo.py
 python /tmp/output_demo.py
 bm cek --ketat examples
+tmpdir=$(mktemp -d)
+cd "$tmpdir"
+bm buat qa_bangun
+cd qa_bangun
+bm bangun
+python build/utama.py
 ```
 
 ## Cek Mode Aman

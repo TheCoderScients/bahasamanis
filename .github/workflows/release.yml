@@ -29,7 +29,9 @@ jobs:
           python -m pip install -e ".[dev,web,build]"
 
       - name: Run tests before release
-        run: python -m pytest
+        run: |
+          python -m pytest
+          bm cek --ketat examples
 
       - name: Build package
         run: |

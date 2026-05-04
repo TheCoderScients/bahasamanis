@@ -50,8 +50,8 @@ Bahasa Manis dianggap siap untuk proyek besar jika:
 
 ## Fase 2: Package dan Modul
 
-- [ ] Format `bm.toml` distabilkan.
-- [ ] Field proyek wajib dan opsional terdokumentasi.
+- [x] Format `bm.toml` distabilkan.
+- [x] Field proyek wajib dan opsional terdokumentasi.
 - [ ] `pakai` mendukung import relatif proyek secara konsisten.
 - [ ] `pakai` mendukung folder modul.
 - [ ] Namespace package ditentukan.
@@ -88,9 +88,9 @@ Bahasa Manis dianggap siap untuk proyek besar jika:
 
 ## Fase 5: Build dan Deploy
 
-- [ ] `bm bangun` membuat output Python dari proyek.
-- [ ] `bm bangun` membaca `utama` dari `bm.toml`.
-- [ ] Output build punya folder standar.
+- [x] `bm bangun` membuat output Python dari proyek.
+- [x] `bm bangun` membaca `utama` dari `bm.toml`.
+- [x] Output build punya folder standar.
 - [ ] Template Docker untuk CLI app tersedia.
 - [ ] Template web API sederhana tersedia.
 - [ ] Release checklist untuk PyPI tersedia.
@@ -119,7 +119,7 @@ Bahasa Manis dianggap siap untuk proyek besar jika:
 - [ ] Panduan membuat web API tersedia.
 - [ ] Contoh proyek besar mini tersedia.
 - [ ] Tutorial testing Bahasa Manis tersedia.
-- [ ] Dokumentasi `bm.toml` lengkap tersedia.
+- [x] Dokumentasi `bm.toml` lengkap tersedia.
 
 ## Fase 8: Keamanan, Stabilitas, dan Performa
 
@@ -146,9 +146,8 @@ Bahasa Manis dianggap siap untuk proyek besar jika:
 
 Urutan kerja paling masuk akal dari kondisi sekarang:
 
-1. Stabilkan dokumentasi format `bm.toml`.
-2. Tambah `bm bangun`.
-3. Tambah modul standar `env`, `log`, dan `csv`.
-4. Tambah helper test `pastikan`.
-5. Buat contoh proyek besar mini.
-6. Siapkan rilis `1.0.0-rc.1`.
+1. Tambah modul standar `env`, `log`, dan `csv`.
+2. Tambah `bm paket` untuk melihat modul/dependency proyek.
+3. Tambah helper test `pastikan`.
+4. Buat contoh proyek besar mini.
+5. Siapkan rilis `1.0.0-rc.1`.

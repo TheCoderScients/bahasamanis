@@ -27,6 +27,7 @@ Sudah dikerjakan:
 - `bm.toml` mulai dipakai oleh CLI lewat `bm info` dan `bm jalankan` tanpa file.
 - Folder biasa tanpa `bm.toml` tetap didukung oleh `bm info`, `bm cek`, `bm tes`, dan tebakan file utama untuk `bm jalankan`.
 - `bm ubah` punya output default dari `bm.toml`, `bm cek --ketat` tersedia untuk CI, `bm tes` punya ringkasan, dan `bm bersih` menghapus cache/build.
+- Format `bm.toml` v1 terdokumentasi dan divalidasi, serta `bm bangun` membuat output Python proyek dari file utama.
 
 Target utama:
 

@@ -17,6 +17,7 @@ PyPI: https://pypi.org/project/bahasamanis/
 - [Panduan Pemula](docs/PANDUAN_PEMULA.md)
 - [Roadmap](docs/ROADMAP.md)
 - [Roadmap Proyek Besar](docs/ROADMAP_PROYEK_BESAR.md)
+- [Format bm.toml](docs/BM_TOML.md)
 - [Stabilitas](docs/STABILITAS.md)
 - [Keamanan Playground](docs/KEAMANAN_PLAYGROUND.md)
 - [QA Release](docs/QA_RELEASE.md)
@@ -55,6 +56,7 @@ Perintah CLI:
 - `bm cek [path]`
 - `bm cek --ketat [path]`
 - `bm tes [path]`
+- `bm bangun [path]`
 - `bm bersih [path]`
 - `bm info`
 - `bm diagnosa`
@@ -72,11 +74,14 @@ bm cek
 bm cek --ketat
 bm tes
 bm ubah
+bm bangun
 bm bersih
 ```
 
 Di dalam proyek yang punya `bm.toml`, `bm ubah` otomatis menyimpan hasil Python
 ke output bawaan, misalnya `build/utama.py`.
+`bm bangun` membaca file utama dari `bm.toml`, melakukan cek, lalu membuat output
+Python siap dijalankan.
 
 Folder biasa tanpa `bm.toml` tetap bisa dipakai:
 

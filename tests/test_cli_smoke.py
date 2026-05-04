@@ -58,8 +58,10 @@ def test_cli_buat_cek_tes_project(tmp_path):
     info = run_cli("info", cwd=app)
     assert info.returncode == 0
     assert "app_manis" in info.stdout
+    assert "bm.toml v1" in info.stdout
     assert "src/utama.bm" in info.stdout
     assert "build/utama.py" in info.stdout
+    assert "Output bangun" in info.stdout
 
     run_default = run_cli("jalankan", cwd=app)
     assert run_default.returncode == 0
@@ -78,6 +80,18 @@ def test_cli_buat_cek_tes_project(tmp_path):
     out = app / "build" / "utama.py"
     assert out.exists()
     assert "def __bm_main():" in out.read_text(encoding="utf-8")
+
+    build = run_cli("bangun", cwd=app)
+    assert build.returncode == 0
+    assert "Bangun selesai" in build.stdout
+    built = subprocess.run(
+        [sys.executable, str(app / "build" / "utama.py")],
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    assert built.returncode == 0
+    assert "app_manis siap jalan" in built.stdout
 
     nested_info = run_cli("info", cwd=app / "src")
     assert nested_info.returncode == 0
@@ -147,6 +161,42 @@ def test_cli_cek_ketat_ignores_english_words_inside_strings(tmp_path):
     result = run_cli("cek", "--ketat", str(src))
     assert result.returncode == 0
     assert result.stderr == ""
+
+def test_cli_bangun_uses_custom_output_from_bm_toml(tmp_path):
+    app = tmp_path / "app_output"
+    assert run_cli("buat", str(app)).returncode == 0
+    config = app / "bm.toml"
+    config.write_text(
+        config.read_text(encoding="utf-8").replace(
+            '[bangun]\noutput = "build/utama.py"',
+            '[bangun]\noutput = "hasil/aplikasi.py"',
+        ),
+        encoding="utf-8",
+    )
+
+    result = run_cli("bangun", cwd=app)
+    assert result.returncode == 0
+    assert (app / "hasil" / "aplikasi.py").exists()
+    assert "hasil/aplikasi.py" in result.stdout
+
+def test_cli_bangun_ketat_reports_style_warnings(tmp_path):
+    app = tmp_path / "app_ketat"
+    assert run_cli("buat", str(app)).returncode == 0
+    (app / "src" / "utama.bm").write_text('jika salah maka\n    cetak "x"\nelif benar maka\n    cetak "y"\nakhir\n', encoding="utf-8")
+
+    result = run_cli("bangun", "--ketat", cwd=app)
+    assert result.returncode == 1
+    assert "Bangun dibatalkan" in result.stderr
+    assert "lain jika" in result.stderr
+
+def test_cli_project_config_validation_reports_missing_main(tmp_path):
+    app = tmp_path / "app_config"
+    assert run_cli("buat", str(app)).returncode == 0
+    (app / "src" / "utama.bm").unlink()
+
+    result = run_cli("cek", cwd=app)
+    assert result.returncode == 1
+    assert "file utama tidak ditemukan" in result.stderr
 
 def test_cli_bersih_removes_cache_and_build_dirs(tmp_path):
     app = tmp_path / "app_bersih"

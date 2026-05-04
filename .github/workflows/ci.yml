@@ -31,5 +31,15 @@ jobs:
           python -m json.tool vscode-bahasamanis/syntaxes/bm.tmLanguage.json >/tmp/bm_syntax.json
       - name: Run tests
         run: python -m pytest
+      - name: Run CLI project workflow
+        run: |
+          bm cek --ketat examples
+          tmpdir="$(mktemp -d)"
+          cd "$tmpdir"
+          bm buat ci_bangun
+          cd ci_bangun
+          bm info
+          bm bangun --ketat
+          python build/utama.py
       - name: Run bundled demo examples
         run: bm jalankan examples/run_all_demos.bm

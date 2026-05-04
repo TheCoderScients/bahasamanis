@@ -36,6 +36,8 @@ Checklist:
 - [x] Workflow proyek awal tersedia lewat `bm buat`, `bm cek`, dan `bm tes`.
 - [x] Checklist proyek besar tersedia di `docs/ROADMAP_PROYEK_BESAR.md`.
 - [x] `bm.toml` mulai dipakai oleh CLI lewat `bm info` dan `bm jalankan` tanpa file.
+- [x] Format `bm.toml` v1 terdokumentasi.
+- [x] `bm bangun` membuat output Python dari proyek.
 - [x] Semua demo non-interaktif jalan lewat `examples/run_all_demos.bm`.
 - [x] `python -m pytest` hijau.
 - [x] Build paket dan `twine check` hijau.
