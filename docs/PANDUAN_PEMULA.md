@@ -54,12 +54,18 @@ cd aplikasi_saya
 bm info
 bm jalankan
 bm cek
+bm cek --ketat
 bm tes
+bm ubah
+bm bersih
 ```
 
 `bm cek` memeriksa file `.bm` tanpa menjalankan program.
+`bm cek --ketat` cocok untuk CI karena warning gaya sederhana ikut dianggap gagal.
 `bm tes` menjalankan file test `.bm` di folder `tests`.
 `bm jalankan` otomatis membaca file utama dari `bm.toml` kalau dijalankan dari folder proyek.
+`bm ubah` otomatis membuat output Python di `build/utama.py` untuk proyek baru.
+`bm bersih` menghapus cache dan hasil build.
 
 Kalau folder kamu belum punya `bm.toml`, tetap bisa dipakai:
 

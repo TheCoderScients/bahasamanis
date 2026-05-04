@@ -59,6 +59,7 @@ def test_cli_buat_cek_tes_project(tmp_path):
     assert info.returncode == 0
     assert "app_manis" in info.stdout
     assert "src/utama.bm" in info.stdout
+    assert "build/utama.py" in info.stdout
 
     run_default = run_cli("jalankan", cwd=app)
     assert run_default.returncode == 0
@@ -70,7 +71,13 @@ def test_cli_buat_cek_tes_project(tmp_path):
 
     test = run_cli("tes", cwd=app)
     assert test.returncode == 0
-    assert "test BM lulus" in test.stdout
+    assert "Ringkasan tes: 1 lulus, 0 gagal, 1 total." in test.stdout
+
+    transpile = run_cli("ubah", cwd=app)
+    assert transpile.returncode == 0
+    out = app / "build" / "utama.py"
+    assert out.exists()
+    assert "def __bm_main():" in out.read_text(encoding="utf-8")
 
     nested_info = run_cli("info", cwd=app / "src")
     assert nested_info.returncode == 0
@@ -116,4 +123,44 @@ def test_cli_folder_mode_finds_test_files(tmp_path):
     result = run_cli("tes", cwd=app)
     assert result.returncode == 0
     assert "tes folder biasa" in result.stdout
-    assert "test BM lulus" in result.stdout
+    assert "Ringkasan tes: 1 lulus, 0 gagal, 1 total." in result.stdout
+
+def test_cli_cek_ketat_reports_style_warnings(tmp_path):
+    src = tmp_path / "gaya_lama.bm"
+    src.write_text('jika salah maka\n    cetak "x"\nelif benar maka\n    cetak "y"  \nakhir\n', encoding="utf-8")
+    result = run_cli("cek", str(src), "--ketat")
+    assert result.returncode == 1
+    assert "mode ketat" in result.stderr
+    assert "lain jika" in result.stderr
+    assert "spasi kosong" in result.stderr
+
+def test_cli_cek_ketat_accepts_flag_before_path(tmp_path):
+    src = tmp_path / "rapi.bm"
+    src.write_text('cetak "aman"\n', encoding="utf-8")
+    result = run_cli("cek", "--ketat", str(src))
+    assert result.returncode == 0
+    assert "file BM valid (ketat)" in result.stdout
+
+def test_cli_cek_ketat_ignores_english_words_inside_strings(tmp_path):
+    src = tmp_path / "teks_aman.bm"
+    src.write_text('cetak "kata elif dan async cuma teks biasa"\n', encoding="utf-8")
+    result = run_cli("cek", "--ketat", str(src))
+    assert result.returncode == 0
+    assert result.stderr == ""
+
+def test_cli_bersih_removes_cache_and_build_dirs(tmp_path):
+    app = tmp_path / "app_bersih"
+    result = run_cli("buat", str(app))
+    assert result.returncode == 0
+    (app / "__pycache__").mkdir()
+    (app / "__pycache__" / "x.pyc").write_text("cache", encoding="utf-8")
+    (app / "contoh.egg-info").mkdir()
+    run_cli("ubah", cwd=app)
+    assert (app / "build").exists()
+
+    clean = run_cli("bersih", cwd=app)
+    assert clean.returncode == 0
+    assert "Bersih selesai" in clean.stdout
+    assert not (app / "__pycache__").exists()
+    assert not (app / "contoh.egg-info").exists()
+    assert not (app / "build").exists()

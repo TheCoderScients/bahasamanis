@@ -43,10 +43,10 @@ Bahasa Manis dianggap siap untuk proyek besar jika:
 - [x] `bm info` menampilkan konfigurasi proyek.
 - [x] `bm jalankan` tanpa file memakai `utama` dari `bm.toml`.
 - [x] Folder biasa tanpa `bm.toml` tetap bisa memakai `bm info`, `bm cek`, `bm tes`, dan `bm jalankan`.
-- [ ] `bm ubah` punya output default berbasis `bm.toml`.
-- [ ] `bm cek` punya mode ketat untuk CI.
-- [ ] `bm tes` punya ringkasan test yang lebih rapi.
-- [ ] `bm bersih` menghapus cache dan hasil build.
+- [x] `bm ubah` punya output default berbasis `bm.toml`.
+- [x] `bm cek` punya mode ketat untuk CI.
+- [x] `bm tes` punya ringkasan test yang lebih rapi.
+- [x] `bm bersih` menghapus cache dan hasil build.
 
 ## Fase 2: Package dan Modul
 
@@ -146,10 +146,9 @@ Bahasa Manis dianggap siap untuk proyek besar jika:
 
 Urutan kerja paling masuk akal dari kondisi sekarang:
 
-1. Stabilkan `bm.toml` dan project root.
-2. Rapikan `bm cek` dan `bm tes` untuk CI.
-3. Tambah `bm bangun`.
-4. Tambah modul standar `env`, `log`, dan `csv`.
-5. Tambah helper test `pastikan`.
-6. Buat contoh proyek besar mini.
-7. Siapkan rilis `1.0.0-rc.1`.
+1. Stabilkan dokumentasi format `bm.toml`.
+2. Tambah `bm bangun`.
+3. Tambah modul standar `env`, `log`, dan `csv`.
+4. Tambah helper test `pastikan`.
+5. Buat contoh proyek besar mini.
+6. Siapkan rilis `1.0.0-rc.1`.

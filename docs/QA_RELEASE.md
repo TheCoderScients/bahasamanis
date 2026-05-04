@@ -27,6 +27,7 @@ bm versi
 bm jalankan examples/output_demo.bm
 bm ubah examples/output_demo.bm -o /tmp/output_demo.py
 python /tmp/output_demo.py
+bm cek --ketat examples
 ```
 
 ## Cek Mode Aman

@@ -10,17 +10,22 @@ Perintah:
   bm buat nama_proyek
   bm cek [path]
   bm tes [path]
+  bm bersih [path]
   bm info
   bm versi
 """
 import sys
 import argparse
 import shutil
+import re
 from pathlib import Path
 from bahasamanis import __version__, Interpreter, parse_program, transpile_to_python
 
 SKIP_DIRS = {'.git', '.hg', '.svn', '.venv', 'venv', '__pycache__', 'dist', 'build'}
 MAIN_FILE_NAMES = ('utama.bm', 'main.bm', 'app.bm', 'program.bm')
+CLEAN_DIRS = {'__pycache__', '.pytest_cache', 'build', 'dist'}
+CLEAN_DIR_SUFFIXES = ('.egg-info',)
+CLEAN_SUFFIXES = {'.pyc', '.pyo'}
 
 def find_project_root(start: Path | None = None) -> Path | None:
     current = (start or Path.cwd()).resolve()
@@ -60,15 +65,6 @@ def load_project(start: Path | None = None) -> tuple[Path, dict[str, dict[str, s
 
 def project_value(config: dict[str, dict[str, str]], section: str, key: str, default: str) -> str:
     return config.get(section, {}).get(key, default)
-
-def resolve_project_path(path: str | None, default: str) -> Path:
-    if path:
-        return Path(path)
-    project = load_project()
-    if project:
-        root, config = project
-        return root / default
-    return Path(default)
 
 def iter_bm_files(target: Path):
     if target.is_file():
@@ -132,6 +128,46 @@ def rel_display(path: Path, root: Path | None = None) -> str:
     except ValueError:
         return str(path)
 
+def strip_comment(line: str) -> str:
+    out = []
+    inq = False
+    quote = ''
+    escaped = False
+    for ch in line:
+        if escaped:
+            escaped = False
+            out.append(' ' if inq else ch)
+            continue
+        if ch == '\\' and inq:
+            escaped = True
+            out.append(' ')
+            continue
+        if ch in "\"'":
+            if inq and ch == quote:
+                inq = False
+                quote = ''
+            elif not inq:
+                inq = True
+                quote = ch
+            out.append(' ')
+            continue
+        if ch == '#' and not inq:
+            break
+        out.append(' ' if inq else ch)
+    return ''.join(out)
+
+def strict_warnings(file: Path, src: str):
+    warnings = []
+    for lineno, raw in enumerate(src.splitlines(), start=1):
+        code = strip_comment(raw)
+        if raw.rstrip() != raw:
+            warnings.append((lineno, 'hapus spasi kosong di akhir baris'))
+        if re.search(r'\belif\b', code):
+            warnings.append((lineno, 'pakai `lain jika`, bukan alias Inggris `elif`'))
+        if re.search(r'\basync\b', code):
+            warnings.append((lineno, 'pakai `asinkron`, bukan alias Inggris `async`'))
+    return warnings
+
 def run_bm_file(path: Path):
     with open(path, 'r', encoding='utf-8') as f:
         src = f.read()
@@ -174,6 +210,7 @@ def cmd_run(path: str | None = None) -> int:
     return 0
 
 def cmd_transpile(path: str | None = None, out: str | None = None) -> int:
+    project = None
     if not path:
         project = load_project()
         if project:
@@ -188,10 +225,16 @@ def cmd_transpile(path: str | None = None, out: str | None = None) -> int:
     with open(path, 'r', encoding='utf-8') as f:
         src = f.read()
     py = transpile_to_python(src)
+    if out is None and project:
+        root, config = project
+        default_out = 'build/' + Path(path).with_suffix('.py').name
+        out = str(root / project_value(config, 'ubah', 'output', default_out))
     if out:
-        with open(out, 'w', encoding='utf-8') as f:
+        out_path = Path(out)
+        out_path.parent.mkdir(parents=True, exist_ok=True)
+        with open(out_path, 'w', encoding='utf-8') as f:
             f.write(py)
-        print('Tersimpan ->', out)
+        print('Tersimpan ->', out_path)
     else:
         print(py)
     return 0
@@ -223,6 +266,9 @@ def cmd_create(name: str, template: str = 'cli') -> int:
             '',
             '[tes]',
             'path = "tests"',
+            '',
+            '[ubah]',
+            'output = "build/utama.py"',
             '',
         ]),
         encoding='utf-8',
@@ -266,17 +312,18 @@ def cmd_create(name: str, template: str = 'cli') -> int:
             'bm jalankan',
             'bm cek',
             'bm tes',
+            'bm ubah',
             '```',
             '',
         ]),
         encoding='utf-8',
     )
-    (root / '.gitignore').write_text('__pycache__/\n*.pyc\n', encoding='utf-8')
+    (root / '.gitignore').write_text('__pycache__/\n*.pyc\n.pytest_cache/\nbuild/\ndist/\n', encoding='utf-8')
     print(f"Proyek '{root}' dibuat.")
     print(f"Jalankan: cd {root} && bm jalankan")
     return 0
 
-def cmd_check(path: str | None = None) -> int:
+def cmd_check(path: str | None = None, strict: bool = False) -> int:
     project = load_project()
     if path:
         target = Path(path)
@@ -294,6 +341,13 @@ def cmd_check(path: str | None = None) -> int:
         try:
             src = file.read_text(encoding='utf-8')
             parse_program(src)
+            warnings = strict_warnings(file, src) if strict else []
+            if warnings:
+                failed += 1
+                print(f"ERR {file}: mode ketat menemukan {len(warnings)} peringatan", file=sys.stderr)
+                for lineno, message in warnings:
+                    print(f"  baris {lineno}: {message}", file=sys.stderr)
+                continue
             print(f"OK  {file}")
         except Exception as e:
             failed += 1
@@ -301,7 +355,8 @@ def cmd_check(path: str | None = None) -> int:
     if failed:
         print(f"{failed} file bermasalah.", file=sys.stderr)
         return 1
-    print(f"{len(files)} file BM valid.")
+    mode = "ketat" if strict else "normal"
+    print(f"{len(files)} file BM valid ({mode}).")
     return 0
 
 def cmd_test(path: str | None = None) -> int:
@@ -323,17 +378,43 @@ def cmd_test(path: str | None = None) -> int:
         print("Belum ada test .bm di folder ini. Buat tests/tes_utama.bm atau pakai `bm cek` untuk validasi cepat.")
         return 0
     failed = 0
+    passed = 0
     for file in files:
         try:
             run_bm_file(file)
+            passed += 1
             print(f"LULUS {file}")
         except Exception as e:
             failed += 1
             print(f"GAGAL {file}: {e}", file=sys.stderr)
     if failed:
-        print(f"{failed} test gagal.", file=sys.stderr)
+        print(f"Ringkasan tes: {passed} lulus, {failed} gagal, {len(files)} total.", file=sys.stderr)
         return 1
-    print(f"{len(files)} test BM lulus.")
+    print(f"Ringkasan tes: {passed} lulus, 0 gagal, {len(files)} total.")
+    return 0
+
+def cmd_clean(path: str | None = None) -> int:
+    project = load_project()
+    if path:
+        root = Path(path)
+    elif project:
+        root = project[0]
+    else:
+        root = Path.cwd()
+    if not root.exists():
+        print(f"[Error] Path '{root}' tidak ditemukan.", file=sys.stderr)
+        return 1
+    removed = 0
+    for target in sorted(root.rglob('*'), key=lambda p: len(p.parts), reverse=True):
+        if target.is_dir() and (target.name in CLEAN_DIRS or target.name.endswith(CLEAN_DIR_SUFFIXES)):
+            shutil.rmtree(target)
+            print(f"Hapus folder: {target}")
+            removed += 1
+        elif target.is_file() and target.suffix in CLEAN_SUFFIXES:
+            target.unlink()
+            print(f"Hapus file: {target}")
+            removed += 1
+    print(f"Bersih selesai. {removed} item dihapus.")
     return 0
 
 def cmd_info() -> int:
@@ -362,12 +443,14 @@ def cmd_info() -> int:
     main_file = project_value(config, 'proyek', 'utama', 'src/utama.bm')
     check_path = project_value(config, 'cek', 'path', '.')
     test_path = project_value(config, 'tes', 'path', 'tests')
+    output_path = project_value(config, 'ubah', 'output', 'build/utama.py')
     print(f'Proyek      : {name}')
     print(f'Versi       : {version}')
     print(f'Root        : {root}')
     print(f'File utama  : {main_file}')
     print(f'Cek path    : {check_path}')
     print(f'Test path   : {test_path}')
+    print(f'Output ubah : {output_path}')
     return 0
 
 def repl():
@@ -428,11 +511,12 @@ def cmd_diagnose():
 def main(argv: list[str] | None = None):
     parser = argparse.ArgumentParser(prog='bm', description='BahasaManis CLI')
     parser.add_argument('--version', action='version', version=f'Bahasa Manis {__version__}')
-    parser.add_argument('action', choices=['jalankan','ubah','interaktif','versi','diagnosa','buat','bikin','cek','tes','info','run','transpile','repl','diagnose','new','check','test'], help='aksi: jalankan, ubah, buat, cek, tes, info, interaktif, versi, atau diagnosa')
+    parser.add_argument('action', choices=['jalankan','ubah','interaktif','versi','diagnosa','buat','bikin','cek','tes','bersih','info','run','transpile','repl','diagnose','new','check','test','clean'], help='aksi: jalankan, ubah, buat, cek, tes, bersih, info, interaktif, versi, atau diagnosa')
     parser.add_argument('file', nargs='?', help='file sumber .bm')
     parser.add_argument('--out','-o', help='file hasil Python untuk perintah ubah')
     parser.add_argument('--template', default='cli', help='template untuk perintah buat (default: cli)')
-    args = parser.parse_args(argv)
+    parser.add_argument('--ketat', '--strict', action='store_true', help='mode cek ketat untuk CI')
+    args = parser.parse_intermixed_args(argv)
     act = args.action
     if act in ('run','jalankan'):
         return cmd_run(args.file)
@@ -443,9 +527,11 @@ def main(argv: list[str] | None = None):
             parser.error('butuh NAMA_PROYEK untuk dibuat')
         return cmd_create(args.file, args.template)
     elif act in ('cek','check'):
-        return cmd_check(args.file)
+        return cmd_check(args.file, args.ketat)
     elif act in ('tes','test'):
         return cmd_test(args.file)
+    elif act in ('bersih','clean'):
+        return cmd_clean(args.file)
     elif act == 'info':
         return cmd_info()
     elif act == 'versi':

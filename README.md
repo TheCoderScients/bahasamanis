@@ -53,7 +53,9 @@ Perintah CLI:
 - `bm interaktif`
 - `bm buat nama_proyek`
 - `bm cek [path]`
+- `bm cek --ketat [path]`
 - `bm tes [path]`
+- `bm bersih [path]`
 - `bm info`
 - `bm diagnosa`
 
@@ -67,8 +69,14 @@ cd aplikasi_saya
 bm info
 bm jalankan
 bm cek
+bm cek --ketat
 bm tes
+bm ubah
+bm bersih
 ```
+
+Di dalam proyek yang punya `bm.toml`, `bm ubah` otomatis menyimpan hasil Python
+ke output bawaan, misalnya `build/utama.py`.
 
 Folder biasa tanpa `bm.toml` tetap bisa dipakai:
 
