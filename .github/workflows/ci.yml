@@ -34,11 +34,13 @@ jobs:
       - name: Run CLI project workflow
         run: |
           bm cek --ketat examples
+          bm paket examples
           tmpdir="$(mktemp -d)"
           cd "$tmpdir"
           bm buat ci_bangun
           cd ci_bangun
           bm info
+          bm paket
           bm bangun --ketat
           python build/utama.py
       - name: Run bundled demo examples

@@ -56,7 +56,7 @@ Bahasa Manis dianggap siap untuk proyek besar jika:
 - [ ] `pakai` mendukung folder modul.
 - [ ] Namespace package ditentukan.
 - [ ] Resolusi modul punya pesan error yang jelas.
-- [ ] `bm paket` menampilkan dependency dan modul proyek.
+- [x] `bm paket` menampilkan dependency dan modul proyek.
 - [ ] Mekanisme dependency lokal dirancang.
 - [ ] Mekanisme dependency publik dirancang setelah 1.0 stabil.
 
@@ -146,7 +146,6 @@ Bahasa Manis dianggap siap untuk proyek besar jika:
 
 Urutan kerja paling masuk akal dari kondisi sekarang:
 
-1. Tambah `bm paket` untuk melihat modul/dependency proyek.
-2. Tambah helper test `pastikan`.
-3. Buat contoh proyek besar mini.
-4. Siapkan rilis `1.0.0-rc.1`.
+1. Tambah helper test `pastikan`.
+2. Buat contoh proyek besar mini.
+3. Siapkan rilis `1.0.0-rc.1`.

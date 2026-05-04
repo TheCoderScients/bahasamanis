@@ -58,6 +58,7 @@ bm cek --ketat
 bm tes
 bm ubah
 bm bangun
+bm paket
 bm bersih
 ```
 
@@ -67,6 +68,7 @@ bm bersih
 `bm jalankan` otomatis membaca file utama dari `bm.toml` kalau dijalankan dari folder proyek.
 `bm ubah` otomatis membuat output Python di `build/utama.py` untuk proyek baru.
 `bm bangun` mengecek proyek lalu membuat hasil Python yang bisa dijalankan.
+`bm paket` menampilkan modul BM dan paket Python yang dipakai proyek.
 `bm bersih` menghapus cache dan hasil build.
 
 Kalau folder kamu belum punya `bm.toml`, tetap bisa dipakai:
@@ -74,6 +76,7 @@ Kalau folder kamu belum punya `bm.toml`, tetap bisa dipakai:
 ```bash
 bm info
 bm cek
+bm paket
 bm jalankan nama_file.bm
 ```
 

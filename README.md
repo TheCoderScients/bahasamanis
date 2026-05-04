@@ -57,6 +57,7 @@ Perintah CLI:
 - `bm cek --ketat [path]`
 - `bm tes [path]`
 - `bm bangun [path]`
+- `bm paket [path]`
 - `bm bersih [path]`
 - `bm info`
 - `bm diagnosa`
@@ -75,6 +76,7 @@ bm cek --ketat
 bm tes
 bm ubah
 bm bangun
+bm paket
 bm bersih
 ```
 
@@ -82,12 +84,14 @@ Di dalam proyek yang punya `bm.toml`, `bm ubah` otomatis menyimpan hasil Python
 ke output bawaan, misalnya `build/utama.py`.
 `bm bangun` membaca file utama dari `bm.toml`, melakukan cek, lalu membuat output
 Python siap dijalankan.
+`bm paket` menampilkan modul BM dan paket Python yang dipakai proyek.
 
 Folder biasa tanpa `bm.toml` tetap bisa dipakai:
 
 ```
 bm info
 bm cek
+bm paket
 bm jalankan nama_file.bm
 ```
 

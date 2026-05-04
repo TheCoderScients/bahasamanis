@@ -29,6 +29,7 @@ Sudah dikerjakan:
 - `bm ubah` punya output default dari `bm.toml`, `bm cek --ketat` tersedia untuk CI, `bm tes` punya ringkasan, dan `bm bersih` menghapus cache/build.
 - Format `bm.toml` v1 terdokumentasi dan divalidasi, serta `bm bangun` membuat output Python proyek dari file utama.
 - Pustaka standar bertambah: `bm_standar/env`, `bm_standar/log`, dan `bm_standar/csv`.
+- CLI punya `bm paket` untuk melihat modul BM dan paket Python yang dipakai proyek.
 
 Target utama:
 

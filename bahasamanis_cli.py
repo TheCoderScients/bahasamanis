@@ -11,6 +11,7 @@ Perintah:
   bm cek [path]
   bm tes [path]
   bm bangun [path]
+  bm paket [path]
   bm bersih [path]
   bm info
   bm versi
@@ -227,6 +228,85 @@ def strict_warnings(file: Path, src: str):
             warnings.append((lineno, 'pakai `asinkron`, bukan alias Inggris `async`'))
     return warnings
 
+def keep_code_before_comment(line: str) -> str:
+    out = []
+    inq = False
+    quote = ''
+    escaped = False
+    for ch in line:
+        if escaped:
+            escaped = False
+            out.append(ch)
+            continue
+        if ch == '\\' and inq:
+            escaped = True
+            out.append(ch)
+            continue
+        if ch in "\"'":
+            if inq and ch == quote:
+                inq = False
+                quote = ''
+            elif not inq:
+                inq = True
+                quote = ch
+            out.append(ch)
+            continue
+        if ch == '#' and not inq:
+            break
+        out.append(ch)
+    return ''.join(out)
+
+def scan_package_usage(file: Path):
+    usage = []
+    pkg_re = re.compile(r'^paket\s+(["\'])([^"\']+)\1\s*(?:(?:sebagai|as)\s*([A-Za-z_][A-Za-z0-9_]*))?\s*$')
+    bm_re = re.compile(r'^pakai\s+(["\'])([^"\']+)\1\s*(?:(?:sebagai|as)\s*([A-Za-z_][A-Za-z0-9_]*))?\s*$')
+    for lineno, raw in enumerate(file.read_text(encoding='utf-8').splitlines(), start=1):
+        line = keep_code_before_comment(raw).strip()
+        if not line:
+            continue
+        match_pkg = pkg_re.match(line)
+        if match_pkg:
+            module = match_pkg.group(2)
+            alias = match_pkg.group(3) or module.split('.')[-1]
+            usage.append(('python', module, alias, file, lineno))
+            continue
+        match_bm = bm_re.match(line)
+        if match_bm:
+            module = match_bm.group(2)
+            alias = match_bm.group(3) or ''
+            usage.append(('bm', module, alias, file, lineno))
+    return usage
+
+def bm_module_kind(name: str) -> str:
+    if name.startswith('bm_standar/'):
+        return 'standar'
+    if name.startswith('.') or '/' in name or name.endswith('.bm'):
+        return 'lokal'
+    return 'modul'
+
+def print_package_group(title: str, records, root: Path, is_bm: bool):
+    print(title)
+    if not records:
+        print('- tidak ada')
+        return
+    grouped = {}
+    for _, module, alias, file, lineno in records:
+        item = grouped.setdefault(module, {'aliases': set(), 'locations': []})
+        if alias:
+            item['aliases'].add(alias)
+        item['locations'].append((file, lineno))
+    for module in sorted(grouped):
+        item = grouped[module]
+        alias_text = ''
+        if item['aliases']:
+            alias_text = ' alias: ' + ', '.join(sorted(item['aliases']))
+        kind_text = f" ({bm_module_kind(module)})" if is_bm else ''
+        print(f"- {module}{kind_text}{alias_text} - {len(item['locations'])} pemakaian")
+        for file, lineno in item['locations'][:5]:
+            print(f"  di {rel_display(file, root)}:{lineno}")
+        if len(item['locations']) > 5:
+            print(f"  dan {len(item['locations']) - 5} lokasi lain")
+
 def run_bm_file(path: Path):
     with open(path, 'r', encoding='utf-8') as f:
         src = f.read()
@@ -379,6 +459,7 @@ def cmd_create(name: str, template: str = 'cli') -> int:
             'bm tes',
             'bm ubah',
             'bm bangun',
+            'bm paket',
             '```',
             '',
         ]),
@@ -523,6 +604,49 @@ def cmd_build(path: str | None = None, out: str | None = None, strict: bool = Fa
     print(f"Jalankan hasil: python {output_path}")
     return 0
 
+def cmd_package(path: str | None = None) -> int:
+    project = load_project(Path(path)) if path and Path(path).is_dir() else load_project()
+    root = Path.cwd().resolve()
+    config: dict[str, dict[str, object]] = {}
+    if project:
+        root, config = project
+    if path:
+        target = Path(path)
+    elif project:
+        if not print_project_config_notes(root, config):
+            return 1
+        target = root / project_value(config, 'cek', 'path', '.')
+    else:
+        target = root
+    files = iter_bm_files(target)
+    if not files:
+        print(f"[Error] Tidak ada file .bm di '{target}'.", file=sys.stderr)
+        return 1
+
+    records = []
+    failed = 0
+    for file in files:
+        try:
+            records.extend(scan_package_usage(file))
+        except Exception as e:
+            failed += 1
+            print(f"ERR {file}: {e}", file=sys.stderr)
+    if failed:
+        print(f"{failed} file gagal dibaca.", file=sys.stderr)
+        return 1
+
+    bm_records = [record for record in records if record[0] == 'bm']
+    py_records = [record for record in records if record[0] == 'python']
+    name = project_value(config, 'proyek', 'nama', root.name) if project else rel_display(target, root)
+    print('Paket Bahasa Manis')
+    print(f'Proyek      : {name}')
+    print(f'Target      : {rel_display(target, root)}')
+    print(f'File BM     : {len(files)}')
+    print_package_group('Modul BM:', bm_records, root, True)
+    print_package_group('Paket Python:', py_records, root, False)
+    print(f"Ringkasan   : {len(set(record[1] for record in bm_records))} modul BM, {len(set(record[1] for record in py_records))} paket Python")
+    return 0
+
 def cmd_clean(path: str | None = None) -> int:
     project = load_project()
     if path:
@@ -650,7 +774,7 @@ def cmd_diagnose():
 def main(argv: list[str] | None = None):
     parser = argparse.ArgumentParser(prog='bm', description='BahasaManis CLI')
     parser.add_argument('--version', action='version', version=f'Bahasa Manis {__version__}')
-    parser.add_argument('action', choices=['jalankan','ubah','interaktif','versi','diagnosa','buat','bikin','cek','tes','bangun','bersih','info','run','transpile','repl','diagnose','new','check','test','build','clean'], help='aksi: jalankan, ubah, buat, cek, tes, bangun, bersih, info, interaktif, versi, atau diagnosa')
+    parser.add_argument('action', choices=['jalankan','ubah','interaktif','versi','diagnosa','buat','bikin','cek','tes','bangun','paket','bersih','info','run','transpile','repl','diagnose','new','check','test','build','package','packages','deps','clean'], help='aksi: jalankan, ubah, buat, cek, tes, bangun, paket, bersih, info, interaktif, versi, atau diagnosa')
     parser.add_argument('file', nargs='?', help='file sumber .bm')
     parser.add_argument('--out','-o', help='file hasil Python untuk perintah ubah')
     parser.add_argument('--template', default='cli', help='template untuk perintah buat (default: cli)')
@@ -671,6 +795,8 @@ def main(argv: list[str] | None = None):
         return cmd_test(args.file)
     elif act in ('bangun','build'):
         return cmd_build(args.file, args.out, args.ketat)
+    elif act in ('paket','package','packages','deps'):
+        return cmd_package(args.file)
     elif act in ('bersih','clean'):
         return cmd_clean(args.file)
     elif act == 'info':

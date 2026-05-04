@@ -93,6 +93,11 @@ def test_cli_buat_cek_tes_project(tmp_path):
     assert built.returncode == 0
     assert "app_manis siap jalan" in built.stdout
 
+    package_empty = run_cli("paket", cwd=app)
+    assert package_empty.returncode == 0
+    assert "Paket Bahasa Manis" in package_empty.stdout
+    assert "0 modul BM, 0 paket Python" in package_empty.stdout
+
     nested_info = run_cli("info", cwd=app / "src")
     assert nested_info.returncode == 0
     assert str(app) in nested_info.stdout
@@ -178,6 +183,38 @@ def test_cli_bangun_uses_custom_output_from_bm_toml(tmp_path):
     assert result.returncode == 0
     assert (app / "hasil" / "aplikasi.py").exists()
     assert "hasil/aplikasi.py" in result.stdout
+
+def test_cli_paket_lists_project_imports(tmp_path):
+    app = tmp_path / "app_paket"
+    assert run_cli("buat", str(app)).returncode == 0
+    (app / "src" / "pembantu.bm").write_text('fungsi nama()\n    kembali "BM"\nakhir\n', encoding="utf-8")
+    (app / "src" / "utama.bm").write_text(
+        '\n'.join([
+            'paket "math" sebagai m',
+            'pakai "bm_standar/json" sebagai json',
+            'pakai "pembantu.bm" sebagai pembantu',
+            'cetak m.sqrt(16)',
+            '',
+        ]),
+        encoding="utf-8",
+    )
+
+    result = run_cli("paket", cwd=app)
+    assert result.returncode == 0
+    assert "Modul BM:" in result.stdout
+    assert "bm_standar/json (standar)" in result.stdout
+    assert "pembantu.bm (lokal)" in result.stdout
+    assert "Paket Python:" in result.stdout
+    assert "math" in result.stdout
+    assert "2 modul BM, 1 paket Python" in result.stdout
+
+def test_cli_paket_lists_example_imports():
+    result = run_cli("paket", "examples")
+    assert result.returncode == 0
+    assert "Paket Bahasa Manis" in result.stdout
+    assert "bm_standar/csv (standar)" in result.stdout
+    assert "output_demo.bm (lokal)" in result.stdout
+    assert "math" in result.stdout
 
 def test_cli_bangun_ketat_reports_style_warnings(tmp_path):
     app = tmp_path / "app_ketat"

@@ -38,6 +38,7 @@ Checklist:
 - [x] `bm.toml` mulai dipakai oleh CLI lewat `bm info` dan `bm jalankan` tanpa file.
 - [x] Format `bm.toml` v1 terdokumentasi.
 - [x] `bm bangun` membuat output Python dari proyek.
+- [x] `bm paket` menampilkan modul BM dan paket Python yang dipakai proyek.
 - [x] Modul standar `env`, `log`, dan `csv` tersedia.
 - [x] Semua demo non-interaktif jalan lewat `examples/run_all_demos.bm`.
 - [x] `python -m pytest` hijau.

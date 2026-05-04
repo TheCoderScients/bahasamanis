@@ -28,6 +28,7 @@ bm jalankan examples/output_demo.bm
 bm ubah examples/output_demo.bm -o /tmp/output_demo.py
 python /tmp/output_demo.py
 bm cek --ketat examples
+bm paket examples
 bm jalankan examples/env_demo.bm
 bm jalankan examples/log_demo.bm
 bm jalankan examples/csv_demo.bm
@@ -35,6 +36,7 @@ tmpdir=$(mktemp -d)
 cd "$tmpdir"
 bm buat qa_bangun
 cd qa_bangun
+bm paket
 bm bangun
 python build/utama.py
 ```
