@@ -1,0 +1,15 @@
+pakai "bm_standar/env" sebagai env
+
+cetak "=== Demo Modul Env ==="
+env.atur("BM_MODE", "produksi")
+env.atur("BM_PORT", "8080")
+env.atur("BM_DEBUG", "benar")
+
+cetak "Mode: {env.ambil('BM_MODE', 'dev')}"
+cetak "Port + 1: {env.ambil_angka('BM_PORT') + 1}"
+cetak "Debug aktif: {env.ambil_bool('BM_DEBUG')}"
+cetak "Mode ada: {env.ada('BM_MODE')}"
+
+env.hapus("BM_MODE")
+env.hapus("BM_PORT")
+env.hapus("BM_DEBUG")

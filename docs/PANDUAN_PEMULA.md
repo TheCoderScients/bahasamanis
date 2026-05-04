@@ -180,7 +180,29 @@ cetak baca_berkas(path)
 
 Catatan: helper berkas dimatikan di mode aman playground publik.
 
-## 10. Mini Project: Catatan Sederhana
+## 10. Modul Standar Ringkas
+
+Untuk fitur yang sering dipakai di aplikasi, gunakan modul standar:
+
+```bm
+pakai "bm_standar/env" sebagai env
+pakai "bm_standar/log" sebagai log
+pakai "bm_standar/csv" sebagai csv
+
+log.atur("INFO")
+log.info("Aplikasi dimulai")
+
+mode = env.ambil("MODE", "dev")
+cetak "Mode: {mode}"
+
+data = [{"nama": "Ayu", "nilai": "90"}]
+cetak csv.bentuk(data, ["nama", "nilai"])
+```
+
+Modul yang tersedia sekarang antara lain `json`, `berkas`, `waktu`, `acak`,
+`jaringan`, `env`, `log`, dan `csv`.
+
+## 11. Mini Project: Catatan Sederhana
 
 ```bm
 path = "catatan.txt"
@@ -214,7 +236,7 @@ fungsi halo
 akhir
 ```
 
-## 11. Lanjut Belajar
+## 12. Lanjut Belajar
 
 Setelah menguasai dasar:
 

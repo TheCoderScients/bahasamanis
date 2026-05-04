@@ -17,6 +17,18 @@ cetak "==== MULAI: json_demo.bm ===="
 pakai "json_demo.bm"
 cetak "==== SELESAI: json_demo.bm ===="
 
+cetak "==== MULAI: env_demo.bm ===="
+pakai "env_demo.bm"
+cetak "==== SELESAI: env_demo.bm ===="
+
+cetak "==== MULAI: log_demo.bm ===="
+pakai "log_demo.bm"
+cetak "==== SELESAI: log_demo.bm ===="
+
+cetak "==== MULAI: csv_demo.bm ===="
+pakai "csv_demo.bm"
+cetak "==== SELESAI: csv_demo.bm ===="
+
 cetak "==== MULAI: data_loop.bm ===="
 pakai "data_loop.bm"
 cetak "==== SELESAI: data_loop.bm ===="

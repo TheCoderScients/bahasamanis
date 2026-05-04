@@ -1,0 +1,45 @@
+# Modul standar: log
+# Logging sederhana ke terminal.
+paket "logging" sebagai pylog
+paket "sys" sebagai pysys
+
+fungsi level(nilai)
+  nama = besar(rapikan(nilai))
+  daftar_level = {"DEBUG": pylog.DEBUG, "INFO": pylog.INFO, "PERINGATAN": pylog.WARNING, "WARNING": pylog.WARNING, "GALAT": pylog.ERROR, "ERROR": pylog.ERROR, "KRITIS": pylog.CRITICAL, "CRITICAL": pylog.CRITICAL}
+  kembali ambil(daftar_level, nama, pylog.INFO)
+akhir
+
+fungsi atur(nilai="INFO", pola="%(levelname)s: %(message)s")
+  pylog.basicConfig(level=level(nilai), format=str(pola), stream=pysys.stdout, force=benar)
+  kembali benar
+akhir
+
+fungsi tulis(nilai, pesan)
+  pylog.log(level(nilai), str(pesan))
+  kembali benar
+akhir
+
+fungsi debug(pesan)
+  pylog.debug(str(pesan))
+  kembali benar
+akhir
+
+fungsi info(pesan)
+  pylog.info(str(pesan))
+  kembali benar
+akhir
+
+fungsi peringatan(pesan)
+  pylog.warning(str(pesan))
+  kembali benar
+akhir
+
+fungsi galat(pesan)
+  pylog.error(str(pesan))
+  kembali benar
+akhir
+
+fungsi kritis(pesan)
+  pylog.critical(str(pesan))
+  kembali benar
+akhir

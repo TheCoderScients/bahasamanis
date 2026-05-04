@@ -382,6 +382,57 @@ def test_safe_mode_blocks_imports_and_file_helpers(tmp_path):
         it.run(f'tulis_berkas("{file_path}", "isi")')
     assert not file_path.exists()
 
+def test_standard_modules_env_log_csv(tmp_path, capsys, monkeypatch):
+    monkeypatch.delenv("BM_TEST_MODE", raising=False)
+    csv_path = tmp_path / "nilai.csv"
+    src = f'''
+pakai "bm_standar/env" sebagai env
+pakai "bm_standar/log" sebagai log
+pakai "bm_standar/csv" sebagai csv
+
+env.atur("BM_TEST_MODE", "produksi")
+env.atur("BM_TEST_PORT", "8080")
+env.atur("BM_TEST_DEBUG", "ya")
+
+cetak "Mode: {{env.ambil('BM_TEST_MODE')}}"
+cetak "Port: {{env.ambil_angka('BM_TEST_PORT') + 1}}"
+cetak "Debug: {{env.ambil_bool('BM_TEST_DEBUG')}}"
+cetak "Ada: {{env.ada('BM_TEST_MODE')}}"
+
+log.atur("INFO", "%(levelname)s:%(message)s")
+log.info("modul log jalan")
+
+data = [{{"nama": "Ayu", "nilai": "90"}}, {{"nama": "Budi", "nilai": "88"}}]
+teks = csv.bentuk(data, ["nama", "nilai"])
+baris = csv.urai(teks)
+cetak "CSV: {{baris[0]['nama']}}/{{baris[1]['nilai']}}"
+
+csv.tulis("{csv_path}", data, ["nama", "nilai"])
+dari_file = csv.baca("{csv_path}")
+cetak "File CSV: {{dari_file[1]['nama']}}"
+
+env.hapus("BM_TEST_MODE")
+env.hapus("BM_TEST_PORT")
+env.hapus("BM_TEST_DEBUG")
+'''
+    it = Interpreter()
+    it.run(src)
+    captured = capsys.readouterr()
+    assert "Mode: produksi" in captured.out
+    assert "Port: 8081" in captured.out
+    assert "Debug: True" in captured.out
+    assert "Ada: True" in captured.out
+    assert "INFO:modul log jalan" in captured.out
+    assert "CSV: Ayu/88" in captured.out
+    assert "File CSV: Budi" in captured.out
+    assert csv_path.exists()
+
+def test_env_wajib_reports_missing_variable(monkeypatch):
+    monkeypatch.delenv("BM_TIDAK_ADA", raising=False)
+    it = Interpreter()
+    with pytest.raises(BMError, match="Environment variable belum ada"):
+        it.run('pakai "bm_standar/env" sebagai env\nenv.wajib("BM_TIDAK_ADA")')
+
 def test_expression_eval_does_not_expose_python_import():
     it = Interpreter()
     with pytest.raises(BMError, match="__import__|tidak didefinisikan"):

@@ -384,9 +384,13 @@ Catatan: Paket `bahasamanis` menyertakan data paket `bahasamanis_data` yang beri
 Paket `bahasamanis` menyertakan pustaka standar BM yang dapat diimpor menggunakan perintah `pakai`. Pustaka standar ini termasuk:
 
 - `bm_standar/json`: modul untuk bekerja dengan data JSON
+- `bm_standar/berkas`: modul untuk bekerja dengan file dan folder
 - `bm_standar/jaringan`: modul untuk bekerja dengan jaringan
 - `bm_standar/waktu`: modul untuk bekerja dengan waktu
 - `bm_standar/acak`: modul untuk bekerja dengan bilangan acak
+- `bm_standar/env`: modul untuk membaca environment variable
+- `bm_standar/log`: modul untuk logging sederhana
+- `bm_standar/csv`: modul untuk data tabel CSV
 
 ## Transpile -> Python
 
@@ -445,7 +449,7 @@ bm.exe jalankan contoh.bm
 - Interop Python: `paket "modul" sebagai alias`
 - Import modul BM: `pakai "path/modul.bm" [sebagai alias]`
 - CLI Indonesia: `bm jalankan`, `bm ubah`, `bm repl` (kompatibel dengan `run`/`transpile`)
-- Pustaka standar dibundel: `bm_standar/{berkas,json,jaringan,waktu,acak}` via paket data `bahasamanis_data`
+- Pustaka standar dibundel: `bm_standar/{berkas,json,jaringan,waktu,acak,env,log,csv}` via paket data `bahasamanis_data`
 - Perbaikan runtime: output `print` di-flush, resolusi `pakai` lebih kuat, default argumen fungsi dievaluasi saat pemanggilan
 
 ## Lisensi

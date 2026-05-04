@@ -66,9 +66,9 @@ Bahasa Manis dianggap siap untuk proyek besar jika:
 - [x] Modul standar waktu tersedia.
 - [x] Helper file tersedia.
 - [x] Modul standar acak tersedia.
-- [ ] Modul `env` untuk membaca environment variable.
-- [ ] Modul `log` untuk logging sederhana.
-- [ ] Modul `csv` untuk data tabel.
+- [x] Modul `env` untuk membaca environment variable.
+- [x] Modul `log` untuk logging sederhana.
+- [x] Modul `csv` untuk data tabel.
 - [ ] Modul `sqlite` untuk database lokal.
 - [ ] Modul `http` untuk request HTTP sederhana.
 - [ ] Modul `argumen` untuk CLI app.
@@ -146,8 +146,7 @@ Bahasa Manis dianggap siap untuk proyek besar jika:
 
 Urutan kerja paling masuk akal dari kondisi sekarang:
 
-1. Tambah modul standar `env`, `log`, dan `csv`.
-2. Tambah `bm paket` untuk melihat modul/dependency proyek.
-3. Tambah helper test `pastikan`.
-4. Buat contoh proyek besar mini.
-5. Siapkan rilis `1.0.0-rc.1`.
+1. Tambah `bm paket` untuk melihat modul/dependency proyek.
+2. Tambah helper test `pastikan`.
+3. Buat contoh proyek besar mini.
+4. Siapkan rilis `1.0.0-rc.1`.

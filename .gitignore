@@ -13,7 +13,7 @@ venv/
 backup_*.zip
 
 # Repo cleanup extras
-bm_standar/
+/bm_standar/
 scripts/
 test_output.txt
 bm

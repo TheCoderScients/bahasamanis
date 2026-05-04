@@ -1,0 +1,67 @@
+# Modul standar: csv
+# Baca dan tulis data tabel sederhana.
+paket "csv" sebagai pycsv
+paket "io" sebagai pio
+paket "pathlib" sebagai pl
+
+fungsi normal_pemisah(pemisah)
+  jika pemisah == kosong maka
+    kembali ","
+  akhir
+  kembali str(pemisah)
+akhir
+
+fungsi urai(teks, pemisah=kosong)
+  sumber = pio.StringIO(str(teks))
+  pembaca = pycsv.DictReader(sumber, delimiter=normal_pemisah(pemisah))
+  kembali daftar(pembaca)
+akhir
+
+fungsi urai_baris(teks, pemisah=kosong)
+  sumber = pio.StringIO(str(teks))
+  pembaca = pycsv.reader(sumber, delimiter=normal_pemisah(pemisah))
+  kembali daftar(pembaca)
+akhir
+
+fungsi bentuk(data, kolom=kosong, pemisah=kosong)
+  jika kolom == kosong maka
+    jika panjang(data) == 0 maka
+      kembali ""
+    akhir
+    kolom = daftar(data[0].keys())
+  akhir
+  keluaran = pio.StringIO()
+  penulis = pycsv.DictWriter(keluaran, fieldnames=kolom, delimiter=normal_pemisah(pemisah), lineterminator="\n")
+  penulis.writeheader()
+  penulis.writerows(data)
+  kembali keluaran.getvalue()
+akhir
+
+fungsi bentuk_baris(data, pemisah=kosong)
+  keluaran = pio.StringIO()
+  penulis = pycsv.writer(keluaran, delimiter=normal_pemisah(pemisah), lineterminator="\n")
+  penulis.writerows(data)
+  kembali keluaran.getvalue()
+akhir
+
+fungsi baca(jalur, pemisah=kosong)
+  teks = pl.Path(str(jalur)).read_text(encoding="utf-8")
+  kembali urai(teks, pemisah)
+akhir
+
+fungsi baca_baris(jalur, pemisah=kosong)
+  teks = pl.Path(str(jalur)).read_text(encoding="utf-8")
+  kembali urai_baris(teks, pemisah)
+akhir
+
+fungsi tulis(jalur, data, kolom=kosong, pemisah=kosong)
+  teks = bentuk(data, kolom, pemisah)
+  pl.Path(str(jalur)).write_text(teks, encoding="utf-8")
+  kembali benar
+akhir
+
+fungsi tulis_baris(jalur, data, pemisah=kosong)
+  teks = bentuk_baris(data, pemisah)
+  pl.Path(str(jalur)).write_text(teks, encoding="utf-8")
+  kembali benar
+akhir

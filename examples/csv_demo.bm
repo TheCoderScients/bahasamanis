@@ -1,0 +1,15 @@
+pakai "bm_standar/csv" sebagai csv
+
+cetak "=== Demo Modul CSV ==="
+data = [{"nama": "Ayu", "nilai": "90"}, {"nama": "Budi", "nilai": "88"}]
+
+teks = csv.bentuk(data, ["nama", "nilai"])
+cetak teks
+
+baris = csv.urai(teks)
+cetak "Nama pertama: {baris[0]['nama']}"
+cetak "Nilai kedua: {baris[1]['nilai']}"
+
+mentah = "produk,jumlah\nBuku,3\nPulpen,5\n"
+tabel = csv.urai_baris(mentah)
+cetak "Produk pertama: {tabel[1][0]}"

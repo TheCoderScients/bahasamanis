@@ -1,0 +1,7 @@
+pakai "bm_standar/log" sebagai log
+
+cetak "=== Demo Modul Log ==="
+log.atur("INFO", "%(levelname)s: %(message)s")
+log.info("Aplikasi dimulai")
+log.peringatan("Konfigurasi memakai nilai bawaan")
+log.galat("Contoh pesan error yang aman")
