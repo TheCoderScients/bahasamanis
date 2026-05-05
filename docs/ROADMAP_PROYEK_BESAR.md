@@ -117,7 +117,7 @@ Bahasa Manis dianggap siap untuk proyek besar jika:
 - [ ] Panduan membuat CLI app tersedia.
 - [ ] Panduan membuat automation tool tersedia.
 - [ ] Panduan membuat web API tersedia.
-- [ ] Contoh proyek besar mini tersedia.
+- [x] Contoh proyek besar mini tersedia.
 - [ ] Tutorial testing Bahasa Manis tersedia.
 - [x] Dokumentasi `bm.toml` lengkap tersedia.
 
@@ -146,5 +146,5 @@ Bahasa Manis dianggap siap untuk proyek besar jika:
 
 Urutan kerja paling masuk akal dari kondisi sekarang:
 
-1. Buat contoh proyek besar mini.
-2. Siapkan rilis `1.0.0-rc.1`.
+1. Siapkan rilis `1.0.0-rc.1`.
+2. Tulis tutorial testing Bahasa Manis.

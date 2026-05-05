@@ -1,0 +1,13 @@
+pakai "../src/domain/aturan.bm" sebagai aturan
+
+pastikan_sama(aturan.subtotal(12000, 3), 36000)
+pastikan_sama(aturan.diskon(70000), 0)
+pastikan_sama(aturan.diskon(75000), 5000)
+pastikan_sama(aturan.diskon(150000), 15000)
+pastikan_sama(aturan.total_setelah_diskon(150000), 135000)
+pastikan_sama(aturan.status_total(135000), "prioritas")
+pastikan_sama(aturan.status_total(60000), "normal")
+pastikan_sama(aturan.status_total(20000), "kecil")
+
+cetak "Tes aturan lulus"
+

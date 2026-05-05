@@ -71,6 +71,10 @@ bm bersih
 `bm paket` menampilkan modul BM dan paket Python yang dipakai proyek.
 `bm bersih` menghapus cache dan hasil build.
 
+Contoh proyek yang lebih lengkap ada di folder `examples/proyek_besar_mini`.
+Di sana kamu bisa melihat pemakaian `src/`, `tests/`, `bm.toml`, modul lokal,
+dan `bm_standar/csv` dalam satu proyek kecil.
+
 Kalau folder kamu belum punya `bm.toml`, tetap bisa dipakai:
 
 ```bash

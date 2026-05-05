@@ -1,0 +1,21 @@
+[proyek]
+format = "1"
+nama = "manismart-mini"
+versi = "0.1.0"
+utama = "src/utama.bm"
+
+[cek]
+path = "."
+ketat = true
+
+[tes]
+path = "tests"
+
+[ubah]
+output = "build/utama.py"
+
+[bangun]
+output = "build/utama.py"
+cek = true
+ketat = true
+

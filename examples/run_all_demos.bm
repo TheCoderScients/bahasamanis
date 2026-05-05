@@ -52,3 +52,7 @@ cetak "==== SELESAI: menu_pilihan.bm ===="
 cetak "==== MULAI: fitur_lanjutan.bm ===="
 pakai "fitur_lanjutan.bm"
 cetak "==== SELESAI: fitur_lanjutan.bm ===="
+
+cetak "==== MULAI: proyek_besar_mini/src/utama.bm ===="
+pakai "proyek_besar_mini/src/utama.bm"
+cetak "==== SELESAI: proyek_besar_mini/src/utama.bm ===="

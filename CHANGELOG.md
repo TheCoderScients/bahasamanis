@@ -31,6 +31,8 @@ Sudah dikerjakan:
 - Pustaka standar bertambah: `bm_standar/env`, `bm_standar/log`, `bm_standar/csv`, dan `bm_standar/uji`.
 - CLI punya `bm paket` untuk melihat modul BM dan paket Python yang dipakai proyek.
 - Helper test tersedia: `pastikan`, `pastikan_sama`/`sama`, `pastikan_tidak_sama`/`tidak_sama`, `pastikan_benar`, dan `pastikan_salah`.
+- Contoh proyek besar mini tersedia di `examples/proyek_besar_mini`.
+- `bm bangun` sekarang bisa menghasilkan Python yang tetap dapat memakai modul BM lokal lewat `pakai`.
 
 Target utama:
 

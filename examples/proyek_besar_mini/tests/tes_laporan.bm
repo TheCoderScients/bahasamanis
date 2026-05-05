@@ -1,0 +1,23 @@
+pakai "../src/domain/inventaris.bm" sebagai inventaris
+pakai "../src/domain/laporan.bm" sebagai laporan
+
+produk = []
+tambah(produk, inventaris.buat_produk("BK-01", "Buku Tulis", 12000, 20))
+tambah(produk, inventaris.buat_produk("PN-02", "Pulpen", 4000, 50))
+tambah(produk, inventaris.buat_produk("BG-03", "Tas Belajar", 85000, 8))
+
+pesanan = []
+tambah(pesanan, {"kode": "BK-01", "jumlah": 3})
+tambah(pesanan, {"kode": "PN-02", "jumlah": 5})
+tambah(pesanan, {"kode": "BG-03", "jumlah": 1})
+
+hasil = laporan.buat_laporan("Ayu", produk, pesanan)
+
+pastikan_sama(panjang(hasil["baris"]), 3)
+pastikan_sama(hasil["subtotal"], 141000)
+pastikan_sama(hasil["diskon"], 5000)
+pastikan_sama(hasil["total"], 136000)
+pastikan_sama(hasil["status"], "prioritas")
+pastikan_benar(berisi(laporan.teks_laporan(hasil), "Buku Tulis"))
+
+cetak "Tes laporan lulus"

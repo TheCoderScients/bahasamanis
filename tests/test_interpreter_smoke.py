@@ -182,6 +182,17 @@ pastikan_benar(benar)
     assert "sama = pastikan_sama" in py
     assert "pastikan_benar(True)" in py
 
+def test_transpile_supports_pakai_runtime_loader():
+    src = '''
+pakai "pembantu.bm" sebagai pembantu
+cetak pembantu.nama()
+'''
+    py = transpile_to_python(src)
+    assert "from bahasamanis import Interpreter as __BMInterpreter" in py
+    assert "def __bm_pakai(path):" in py
+    assert "pembantu = __bm_pakai('pembantu.bm')" in py
+    assert "tidak didukung saat transpile" not in py
+
 def test_exception_handling_coba_tangkap_akhirnya(capsys):
     src = '''
 coba

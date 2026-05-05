@@ -1298,7 +1298,36 @@ class Interpreter:
 
 def transpile_to_python(src:str) -> str:
     stmts = parse_program(src)
-    lines = ["# Transpiled from BahasaManis -> Python", "import asyncio", "from pathlib import Path", "async def __bm_main():"]
+
+    def contains_bm_import(stmt_list: List[Stmt]) -> bool:
+        for stmt in stmt_list:
+            if isinstance(stmt, ImportBMStmt):
+                return True
+            if isinstance(stmt, (FuncDef, AsyncFuncDef, ClassDef, WhileStmt, ForStmt, ForEachStmt, RepeatStmt)):
+                if contains_bm_import(stmt.body):
+                    return True
+            elif isinstance(stmt, IfStmt):
+                for _, block in stmt.branches:
+                    if contains_bm_import(block):
+                        return True
+            elif isinstance(stmt, SwitchStmt):
+                for _, block in stmt.cases:
+                    if contains_bm_import(block):
+                        return True
+            elif isinstance(stmt, TryStmt):
+                if contains_bm_import(stmt.body):
+                    return True
+                if stmt.catch_body is not None and contains_bm_import(stmt.catch_body):
+                    return True
+                if stmt.finally_body is not None and contains_bm_import(stmt.finally_body):
+                    return True
+        return False
+
+    needs_bm_loader = contains_bm_import(stmts)
+    lines = ["# Transpiled from BahasaManis -> Python", "import asyncio", "from pathlib import Path"]
+    if needs_bm_loader:
+        lines.append("from bahasamanis import Interpreter as __BMInterpreter")
+    lines.append("async def __bm_main():")
     indent = "    "
     indonesian_aliases = [
         "jeda = asyncio.sleep",
@@ -1368,6 +1397,28 @@ def transpile_to_python(src:str) -> str:
         "    if nilai: raise AssertionError(pesan or f'Pastikan salah gagal: {nilai!r} bukan salah')",
         "    return True",
     ]
+    if needs_bm_loader:
+        indonesian_aliases.extend([
+            "def __bm_pakai(path):",
+            "    raw = Path(str(path))",
+            "    def dengan_akhiran(p): return p if p.suffix == '.bm' else p.with_suffix('.bm')",
+            "    folder_hasil = Path(__file__).resolve().parent",
+            "    dasar = [Path.cwd(), folder_hasil, *folder_hasil.parents]",
+            "    sudah = set()",
+            "    for base in dasar:",
+            "        for calon in (dengan_akhiran(base / raw), dengan_akhiran(base / 'src' / raw)):",
+            "            key = str(calon.resolve())",
+            "            if key in sudah:",
+            "                continue",
+            "            sudah.add(key)",
+            "            if calon.exists():",
+            "                interp = __BMInterpreter()",
+            "                interp.base_path = calon.parent",
+            "                interp.search_paths = [calon.parent, base, base / 'src', Path.cwd(), folder_hasil]",
+            "                return interp._import_bm_module(str(calon))",
+            "    interp = __BMInterpreter()",
+            "    return interp._import_bm_module(str(raw))",
+        ])
     for alias in indonesian_aliases:
         lines.append(f"{indent}{alias}")
     lines.append("")
@@ -1413,8 +1464,12 @@ def transpile_to_python(src:str) -> str:
                 # import module as alias
                 lines.append(f"{pref}import {s.module} as {s.alias}")
             elif isinstance(s, ImportBMStmt):
-                # For now, 'pakai' is not supported in transpile mode: leave a note
-                lines.append(f"{pref}# NOTE: 'pakai {s.path}' tidak didukung saat transpile (gunakan interpreter)")
+                if s.alias:
+                    lines.append(f"{pref}{s.alias} = __bm_pakai({s.path!r})")
+                else:
+                    lines.append(f"{pref}__bm_mod = __bm_pakai({s.path!r})")
+                    lines.append(f"{pref}globals().update({{k: v for k, v in vars(__bm_mod).items() if not k.startswith('_')}})")
+                    lines.append(f"{pref}del __bm_mod")
             elif isinstance(s, InputStmt):
                 lines.append(f"{pref}{s.varname} = input()")
             elif isinstance(s, PromptInputStmt):

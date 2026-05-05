@@ -65,6 +65,7 @@ Sebelum merilis `1.0.0`, pastikan:
 - `python -m pytest` lulus
 - CI lulus di Python 3.9 sampai 3.13
 - `bm jalankan examples/run_all_demos.bm` lulus
+- contoh proyek besar mini lulus `bm jalankan`, `bm cek`, `bm tes`, dan `bm bangun`
 - dokumentasi pemula sudah lengkap dan tidak menjanjikan fitur di luar implementasi
 - playground publik memakai mode aman
 - fitur eksperimental diberi label jelas

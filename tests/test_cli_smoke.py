@@ -217,6 +217,50 @@ def test_cli_paket_lists_example_imports():
     assert "output_demo.bm (lokal)" in result.stdout
     assert "math" in result.stdout
 
+def test_contoh_proyek_besar_mini_workflow(tmp_path):
+    project = ROOT / "examples" / "proyek_besar_mini"
+
+    info = run_cli("info", cwd=project)
+    assert info.returncode == 0
+    assert "manismart-mini" in info.stdout
+    assert "src/utama.bm" in info.stdout
+
+    run = run_cli("jalankan", cwd=project)
+    assert run.returncode == 0
+    assert "ManisMart Mini" in run.stdout
+    assert "Total: 136000" in run.stdout
+
+    check = run_cli("cek", cwd=project)
+    assert check.returncode == 0
+    assert "file BM valid (ketat)" in check.stdout
+
+    test = run_cli("tes", cwd=project)
+    assert test.returncode == 0
+    assert "Ringkasan tes: 2 lulus, 0 gagal, 2 total." in test.stdout
+
+    package = run_cli("paket", cwd=project)
+    assert package.returncode == 0
+    assert "bm_standar/csv (standar)" in package.stdout
+    assert "domain/laporan.bm (lokal)" in package.stdout
+    assert "aturan.bm (lokal)" in package.stdout
+
+    out = tmp_path / "utama.py"
+    build = run_cli("bangun", "-o", str(out), cwd=project)
+    assert build.returncode == 0
+    assert out.exists()
+    assert "__bm_pakai" in out.read_text(encoding="utf-8")
+
+    built = subprocess.run(
+        [sys.executable, str(out)],
+        cwd=project,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    assert built.returncode == 0
+    assert "ManisMart Mini" in built.stdout
+    assert "Total: 136000" in built.stdout
+
 def test_cli_bangun_ketat_reports_style_warnings(tmp_path):
     app = tmp_path / "app_ketat"
     assert run_cli("buat", str(app)).returncode == 0

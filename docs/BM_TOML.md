@@ -95,3 +95,5 @@ file utama tidak ditemukan, `bm info` dan `bm cek` akan memberi pesan error.
 
 `bm bangun` membaca `[proyek].utama`, memvalidasi file `.bm`, lalu membuat output
 Python sesuai `[bangun].output`.
+Jika file utama memakai `pakai "...bm"`, hasil Python akan mencoba memuat modul
+BM lokal dari folder proyek saat dijalankan.

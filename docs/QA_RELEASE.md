@@ -33,6 +33,16 @@ bm jalankan examples/env_demo.bm
 bm jalankan examples/log_demo.bm
 bm jalankan examples/csv_demo.bm
 bm jalankan examples/uji_demo.bm
+(
+  cd examples/proyek_besar_mini
+  bm info
+  bm jalankan
+  bm cek
+  bm tes
+  bm paket
+  bm bangun
+  python build/utama.py
+)
 tmpdir=$(mktemp -d)
 cd "$tmpdir"
 bm buat qa_bangun

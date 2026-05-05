@@ -86,6 +86,19 @@ ke output bawaan, misalnya `build/utama.py`.
 Python siap dijalankan.
 `bm paket` menampilkan modul BM dan paket Python yang dipakai proyek.
 
+Contoh proyek yang lebih besar tersedia di `examples/proyek_besar_mini`:
+
+```
+cd examples/proyek_besar_mini
+bm info
+bm jalankan
+bm cek
+bm tes
+bm paket
+bm bangun
+python build/utama.py
+```
+
 Folder biasa tanpa `bm.toml` tetap bisa dipakai:
 
 ```
@@ -387,6 +400,8 @@ cetak pesan
   ```
 
 Catatan: Paket `bahasamanis` menyertakan data paket `bahasamanis_data` yang berisi folder `bm_standar/`, sehingga contoh di atas berfungsi langsung setelah instal dari PyPI (tanpa perlu menyalin file .bm secara manual).
+
+Hasil `bm bangun` juga bisa menjalankan proyek yang memakai `pakai "...bm"` selama file modul BM masih ada di folder proyek.
 
 ## Pustaka Standar BM
 

@@ -1,0 +1,30 @@
+# Aturan bisnis ManisMart Mini
+
+fungsi subtotal(harga, jumlah)
+  kembali angka(harga) * angka(jumlah)
+akhir
+
+fungsi diskon(total)
+  nilai = angka(total)
+  jika nilai >= 150000 maka
+    kembali 15000
+  lain jika nilai >= 75000 maka
+    kembali 5000
+  akhir
+  kembali 0
+akhir
+
+fungsi total_setelah_diskon(total)
+  kembali angka(total) - diskon(total)
+akhir
+
+fungsi status_total(total)
+  nilai = angka(total)
+  jika nilai >= 100000 maka
+    kembali "prioritas"
+  lain jika nilai >= 50000 maka
+    kembali "normal"
+  akhir
+  kembali "kecil"
+akhir
+
