@@ -31,15 +31,22 @@ jobs:
           python -m json.tool vscode-bahasamanis/syntaxes/bm.tmLanguage.json >/tmp/bm_syntax.json
       - name: Run tests
         run: python -m pytest
+      - name: Check Bahasa Manis formatting
+        run: |
+          bm format --cek examples
+          bm format --cek bahasamanis_data/bm_standar
       - name: Run CLI project workflow
         run: |
           bm cek --ketat examples
+          bm cek --ketat bahasamanis_data/bm_standar
           bm paket examples
           tmpdir="$(mktemp -d)"
           cd "$tmpdir"
           bm buat ci_bangun
           cd ci_bangun
           bm info
+          bm format --cek
+          bm tes
           bm paket
           bm bangun --ketat
           python build/utama.py

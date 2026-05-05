@@ -1,0 +1,36 @@
+name: Bahasa Manis CI
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+
+jobs:
+  cek:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ambil kode
+        uses: actions/checkout@v4
+
+      - name: Siapkan Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Pasang Bahasa Manis
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install bahasamanis
+
+      - name: Cek format
+        run: bm format --cek
+
+      - name: Cek sintaks ketat
+        run: bm cek --ketat
+
+      - name: Jalankan test BM
+        run: bm tes
+
+      - name: Bangun output Python
+        run: bm bangun --ketat
+

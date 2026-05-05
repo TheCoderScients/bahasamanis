@@ -1,7 +1,7 @@
 cetak "=== Demo Helper Uji ==="
 
 fungsi tambah(a, b)
-  kembali a + b
+    kembali a + b
 akhir
 
 pastikan(tambah(2, 3) == 5, "Tambah harus benar")

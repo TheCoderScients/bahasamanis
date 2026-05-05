@@ -2,15 +2,15 @@ pakai "../src/domain/inventaris.bm" sebagai inventaris
 pakai "../src/domain/laporan.bm" sebagai laporan
 
 produk = [
-  inventaris.buat_produk("BK-01", "Buku Tulis", 12000, 20),
-  inventaris.buat_produk("PN-02", "Pulpen", 4000, 50),
-  inventaris.buat_produk("BG-03", "Tas Belajar", 85000, 8)
+    inventaris.buat_produk("BK-01", "Buku Tulis", 12000, 20),
+    inventaris.buat_produk("PN-02", "Pulpen", 4000, 50),
+    inventaris.buat_produk("BG-03", "Tas Belajar", 85000, 8)
 ]
 
 pesanan = [
-  {"kode": "BK-01", "jumlah": 3},
-  {"kode": "PN-02", "jumlah": 5},
-  {"kode": "BG-03", "jumlah": 1}
+    {"kode": "BK-01", "jumlah": 3},
+    {"kode": "PN-02", "jumlah": 5},
+    {"kode": "BG-03", "jumlah": 1}
 ]
 
 hasil = laporan.buat_laporan("Ayu", produk, pesanan)

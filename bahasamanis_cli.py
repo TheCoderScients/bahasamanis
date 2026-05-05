@@ -296,9 +296,28 @@ def is_block_separator(line: str) -> bool:
         or line == 'akhirnya'
     )
 
+def block_kind(line: str) -> str:
+    if line.startswith('pilih '):
+        return 'pilih'
+    if line.startswith('jika '):
+        return 'jika'
+    if line == 'coba' or line == 'coba maka':
+        return 'coba'
+    return 'blok'
+
+def separator_block_kind(line: str) -> str:
+    if line.startswith('saat ') or line == 'bawaan':
+        return 'pilih'
+    if line == 'lain' or line.startswith('lain jika ') or line.startswith('elif '):
+        return 'jika'
+    if line.startswith('tangkap') or line == 'akhirnya':
+        return 'coba'
+    return 'blok'
+
 def format_bm_source(src: str, indent_text: str = '    ') -> str:
     out: list[str] = []
     block_depth = 0
+    block_stack: list[tuple[str, int]] = []
     bracket_depth = 0
     previous_blank = False
     for raw in src.splitlines():
@@ -310,21 +329,34 @@ def format_bm_source(src: str, indent_text: str = '    ') -> str:
                 previous_blank = True
             continue
         previous_blank = False
-        code = strip_comment(stripped).strip()
+        code = keep_code_before_comment(stripped).strip()
         is_top_level = bracket_depth == 0
         current_block_depth = block_depth
-        if is_top_level and (code == 'akhir' or is_block_separator(code)):
+        if is_top_level and code == 'akhir':
+            if block_stack:
+                current_block_depth = block_stack[-1][1]
+            else:
+                current_block_depth = max(current_block_depth - 1, 0)
+        elif is_top_level and is_block_separator(code):
+            wanted_kind = separator_block_kind(code)
             current_block_depth = max(current_block_depth - 1, 0)
+            for kind, indent in reversed(block_stack):
+                if kind == wanted_kind:
+                    current_block_depth = indent + 1 if kind == 'pilih' else indent
+                    break
         bracket_offset = 0
         if bracket_depth > 0:
             bracket_offset = max(bracket_depth - leading_closing_brackets(stripped), 0)
         out.append(f"{indent_text * (current_block_depth + bracket_offset)}{stripped}")
         if is_top_level:
             if code == 'akhir':
+                if block_stack:
+                    block_stack.pop()
                 block_depth = current_block_depth
             elif is_block_separator(code):
                 block_depth = current_block_depth + 1
             elif is_block_opener(code):
+                block_stack.append((block_kind(code), current_block_depth))
                 block_depth = current_block_depth + 1
         bracket_depth = max(bracket_depth + bracket_delta_outside_quotes(stripped), 0)
     while out and out[-1] == '':

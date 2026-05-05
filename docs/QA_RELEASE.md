@@ -9,6 +9,8 @@ python -m pytest
 python -m py_compile bahasamanis.py bahasamanis_cli.py server.py
 python -m json.tool vscode-bahasamanis/snippets/bm.json >/tmp/bm_snippets.json
 python -m json.tool vscode-bahasamanis/syntaxes/bm.tmLanguage.json >/tmp/bm_syntax.json
+bm format --cek examples
+bm format --cek bahasamanis_data/bm_standar
 bm jalankan examples/run_all_demos.bm
 ```
 
@@ -112,6 +114,8 @@ akhir
 - [ ] `docs/ROADMAP.md` tidak menjanjikan fitur yang belum diputuskan.
 - [ ] `docs/PANDUAN_PEMULA.md` bisa diikuti dari nol.
 - [ ] `docs/KEAMANAN_PLAYGROUND.md` menjelaskan mode aman.
+- [ ] `docs/TUTORIAL_TESTING.md` menjelaskan `bm format --cek`, `bm cek --ketat`, dan `bm tes`.
+- [ ] `docs/CI_TEMPLATE.md` punya template GitHub Actions yang bisa disalin.
 
 ## Cek GitHub
 

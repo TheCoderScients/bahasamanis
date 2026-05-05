@@ -1,23 +1,22 @@
 # Data dan pencarian produk ManisMart Mini
 
 fungsi buat_produk(kode, nama, harga, stok)
-  kembali {"kode": kode, "nama": nama, "harga": angka(harga), "stok": angka(stok)}
+    kembali {"kode": kode, "nama": nama, "harga": angka(harga), "stok": angka(stok)}
 akhir
 
 fungsi cari(daftar_produk, kode)
-  setiap produk dalam daftar_produk lakukan
-    jika produk["kode"] == kode maka
-      kembali produk
+    setiap produk dalam daftar_produk lakukan
+        jika produk["kode"] == kode maka
+            kembali produk
+        akhir
     akhir
-  akhir
-  kembali kosong
+    kembali kosong
 akhir
 
 fungsi stok_cukup(produk, jumlah)
-  kembali angka(produk["stok"]) >= angka(jumlah)
+    kembali angka(produk["stok"]) >= angka(jumlah)
 akhir
 
 fungsi stok_tersisa(produk, jumlah)
-  kembali angka(produk["stok"]) - angka(jumlah)
+    kembali angka(produk["stok"]) - angka(jumlah)
 akhir
-

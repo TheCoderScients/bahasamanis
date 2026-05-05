@@ -20,6 +20,8 @@ PyPI: https://pypi.org/project/bahasamanis/
 - [Format bm.toml](docs/BM_TOML.md)
 - [Stabilitas](docs/STABILITAS.md)
 - [Kesalahan Umum](docs/KESALAHAN_UMUM.md)
+- [Tutorial Testing](docs/TUTORIAL_TESTING.md)
+- [Template CI](docs/CI_TEMPLATE.md)
 - [Keamanan Playground](docs/KEAMANAN_PLAYGROUND.md)
 - [QA Release](docs/QA_RELEASE.md)
 - [Changelog](CHANGELOG.md)

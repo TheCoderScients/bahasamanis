@@ -82,7 +82,7 @@ Bahasa Manis dianggap siap untuk proyek besar jika:
 - [x] Pesan warning punya saran perbaikan.
 - [x] Test BM punya helper `pastikan`.
 - [x] Test BM punya helper `sama`, `tidak_sama`, `pastikan_benar`, dan `pastikan_salah`.
-- [ ] CI template tersedia.
+- [x] CI template tersedia.
 - [ ] Coverage atau laporan file test dirancang.
 - [ ] Error output punya format stabil untuk editor dan CI.
 
@@ -119,7 +119,7 @@ Bahasa Manis dianggap siap untuk proyek besar jika:
 - [ ] Panduan membuat automation tool tersedia.
 - [ ] Panduan membuat web API tersedia.
 - [x] Contoh proyek besar mini tersedia.
-- [ ] Tutorial testing Bahasa Manis tersedia.
+- [x] Tutorial testing Bahasa Manis tersedia.
 - [x] Dokumentasi `bm.toml` lengkap tersedia.
 
 ## Fase 8: Keamanan, Stabilitas, dan Performa
@@ -147,5 +147,7 @@ Bahasa Manis dianggap siap untuk proyek besar jika:
 
 Urutan kerja paling masuk akal dari kondisi sekarang:
 
-1. Siapkan rilis `1.0.0-rc.1`.
-2. Tulis tutorial testing Bahasa Manis.
+1. Tambahkan modul standar `uang` dan `validasi`.
+2. Rancang laporan test/coverage sederhana untuk `bm tes`.
+3. Stabilkan format error output untuk editor dan CI.
+4. Siapkan rilis `1.0.0-rc.1`.

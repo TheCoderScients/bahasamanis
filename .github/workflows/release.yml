@@ -31,7 +31,10 @@ jobs:
       - name: Run tests before release
         run: |
           python -m pytest
+          bm format --cek examples
+          bm format --cek bahasamanis_data/bm_standar
           bm cek --ketat examples
+          bm cek --ketat bahasamanis_data/bm_standar
 
       - name: Build package
         run: |

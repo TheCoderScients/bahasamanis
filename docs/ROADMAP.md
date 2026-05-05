@@ -40,6 +40,7 @@ Checklist:
 - [x] `bm bangun` membuat output Python dari proyek.
 - [x] `bm paket` menampilkan modul BM dan paket Python yang dipakai proyek.
 - [x] `bm format` tersedia untuk format kode otomatis dasar.
+- [x] Template CI dan tutorial testing tersedia.
 - [x] Modul standar `env`, `log`, dan `csv` tersedia.
 - [x] Helper test `pastikan`, `sama`, dan `tidak_sama` tersedia.
 - [x] Contoh proyek besar mini tersedia dan masuk test CLI.

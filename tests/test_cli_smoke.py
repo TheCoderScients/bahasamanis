@@ -210,6 +210,12 @@ def test_cli_format_check_and_write(tmp_path):
             '90',
             ']',
             '}',
+            'pilih menu',
+            'saat "1"',
+            'cetak "Satu"',
+            'bawaan',
+            'cetak "Lain"',
+            'akhir',
             '',
         ]),
         encoding="utf-8",
@@ -226,11 +232,26 @@ def test_cli_format_check_and_write(tmp_path):
     assert '    cetak "Halo"' in text
     assert '    "nama": "Ayu",' in text
     assert '        90' in text
+    assert '    saat "1"\n        cetak "Satu"' in text
+    assert '    bawaan\n        cetak "Lain"' in text
     assert text.endswith('\n')
 
     check_again = run_cli("format", "--cek", str(src))
     assert check_again.returncode == 0
     assert "sudah rapi" in check_again.stdout
+
+def test_ci_template_and_workflows_include_bm_quality_steps():
+    template = (ROOT / "docs" / "templates" / "github-actions-bahasamanis.yml").read_text(encoding="utf-8")
+    ci = (ROOT / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")
+    tutorial = (ROOT / "docs" / "TUTORIAL_TESTING.md").read_text(encoding="utf-8")
+
+    for text in (template, ci, tutorial):
+        assert "bm format --cek" in text
+        assert "bm cek --ketat" in text
+        assert "bm tes" in text
+
+    assert "bm bangun --ketat" in template
+    assert "bm bangun --ketat" in ci
 
 def test_cli_bangun_uses_custom_output_from_bm_toml(tmp_path):
     app = tmp_path / "app_output"

@@ -10,4 +10,3 @@ pastikan_sama(aturan.status_total(60000), "normal")
 pastikan_sama(aturan.status_total(20000), "kecil")
 
 cetak "Tes aturan lulus"
-

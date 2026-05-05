@@ -3,68 +3,68 @@ pakai "aturan.bm" sebagai aturan
 pakai "inventaris.bm" sebagai inventaris
 
 fungsi buat_laporan(pelanggan, daftar_produk, daftar_pesanan)
-  baris = []
-  subtotal_pesanan = 0
+    baris = []
+    subtotal_pesanan = 0
 
-  setiap item dalam daftar_pesanan lakukan
-    kode_item = item["kode"]
-    produk = inventaris.cari(daftar_produk, kode_item)
-    jika produk == kosong maka
-      lempar "Produk tidak ditemukan: {kode_item}"
+    setiap item dalam daftar_pesanan lakukan
+        kode_item = item["kode"]
+        produk = inventaris.cari(daftar_produk, kode_item)
+        jika produk == kosong maka
+            lempar "Produk tidak ditemukan: {kode_item}"
+        akhir
+
+        jumlah = angka(item["jumlah"])
+        jika tidak inventaris.stok_cukup(produk, jumlah) maka
+            lempar "Stok tidak cukup: {kode_item}"
+        akhir
+
+        nilai_item = aturan.subtotal(produk["harga"], jumlah)
+        subtotal_pesanan = subtotal_pesanan + nilai_item
+        tambah(baris, {
+                "kode": kode_item,
+                "nama": produk["nama"],
+                "jumlah": jumlah,
+                "subtotal": nilai_item,
+                "sisa_stok": inventaris.stok_tersisa(produk, jumlah)
+        })
     akhir
 
-    jumlah = angka(item["jumlah"])
-    jika tidak inventaris.stok_cukup(produk, jumlah) maka
-      lempar "Stok tidak cukup: {kode_item}"
-    akhir
+    potongan = aturan.diskon(subtotal_pesanan)
+    total_akhir = subtotal_pesanan - potongan
+    judul = "Laporan pesanan untuk {pelanggan}"
 
-    nilai_item = aturan.subtotal(produk["harga"], jumlah)
-    subtotal_pesanan = subtotal_pesanan + nilai_item
-    tambah(baris, {
-      "kode": kode_item,
-      "nama": produk["nama"],
-      "jumlah": jumlah,
-      "subtotal": nilai_item,
-      "sisa_stok": inventaris.stok_tersisa(produk, jumlah)
-    })
-  akhir
-
-  potongan = aturan.diskon(subtotal_pesanan)
-  total_akhir = subtotal_pesanan - potongan
-  judul = "Laporan pesanan untuk {pelanggan}"
-
-  kembali {
-    "judul": judul,
-    "pelanggan": pelanggan,
-    "baris": baris,
-    "subtotal": subtotal_pesanan,
-    "diskon": potongan,
-    "total": total_akhir,
-    "status": aturan.status_total(total_akhir)
-  }
+    kembali {
+        "judul": judul,
+        "pelanggan": pelanggan,
+        "baris": baris,
+        "subtotal": subtotal_pesanan,
+        "diskon": potongan,
+        "total": total_akhir,
+        "status": aturan.status_total(total_akhir)
+    }
 akhir
 
 fungsi teks_laporan(hasil)
-  baris_teks = []
-  tambah(baris_teks, hasil["judul"])
+    baris_teks = []
+    tambah(baris_teks, hasil["judul"])
 
-  status = hasil["status"]
-  subtotal = hasil["subtotal"]
-  diskon = hasil["diskon"]
-  total = hasil["total"]
-  tambah(baris_teks, "Status: {status}")
-  tambah(baris_teks, "Subtotal: {subtotal}")
-  tambah(baris_teks, "Diskon: {diskon}")
-  tambah(baris_teks, "Total: {total}")
-  tambah(baris_teks, "Item:")
+    status = hasil["status"]
+    subtotal = hasil["subtotal"]
+    diskon = hasil["diskon"]
+    total = hasil["total"]
+    tambah(baris_teks, "Status: {status}")
+    tambah(baris_teks, "Subtotal: {subtotal}")
+    tambah(baris_teks, "Diskon: {diskon}")
+    tambah(baris_teks, "Total: {total}")
+    tambah(baris_teks, "Item:")
 
-  setiap item dalam hasil["baris"] lakukan
-    kode = item["kode"]
-    nama = item["nama"]
-    jumlah = item["jumlah"]
-    nilai = item["subtotal"]
-    tambah(baris_teks, "- {kode} {nama} x{jumlah} = {nilai}")
-  akhir
+    setiap item dalam hasil["baris"] lakukan
+        kode = item["kode"]
+        nama = item["nama"]
+        jumlah = item["jumlah"]
+        nilai = item["subtotal"]
+        tambah(baris_teks, "- {kode} {nama} x{jumlah} = {nilai}")
+    akhir
 
-  kembali gabung(baris_teks, "\n")
+    kembali gabung(baris_teks, "\n")
 akhir
