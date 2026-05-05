@@ -42,6 +42,7 @@ Checklist:
 - [x] Modul standar `env`, `log`, dan `csv` tersedia.
 - [x] Helper test `pastikan`, `sama`, dan `tidak_sama` tersedia.
 - [x] Contoh proyek besar mini tersedia dan masuk test CLI.
+- [x] Daftar/kamus multi-baris, interpolasi string konsisten, dan pembacaan global dari fungsi didukung.
 - [x] Semua demo non-interaktif jalan lewat `examples/run_all_demos.bm`.
 - [x] `python -m pytest` hijau.
 - [x] Build paket dan `twine check` hijau.

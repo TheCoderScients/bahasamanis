@@ -16,6 +16,89 @@ def test_transpile_smoke():
     # pastikan interpolasi menjadi f-string
     assert 'print(f"Halo, {1+2}")' in py
 
+def test_multiline_list_dict_runtime(capsys):
+    src = '''
+data = {
+    "nama": "Ayu",
+    "umur": 17,
+    "nilai": [90, 95, 88]
+}
+
+fungsi buat_item(kode, nama)
+    kembali {
+        "kode": kode,
+        "nama": nama
+    }
+akhir
+
+daftar = [
+    buat_item("BK-01", "Buku"),
+    buat_item("PN-02", "Pulpen")
+]
+
+tambah(daftar, {
+    "kode": "BG-03",
+    "nama": "Tas"
+})
+
+cetak data["nama"]
+cetak daftar[2]["nama"]
+'''
+    it = Interpreter()
+    it.run(src)
+    captured = capsys.readouterr()
+    assert "Ayu" in captured.out
+    assert "Tas" in captured.out
+
+def test_string_interpolation_inside_calls_returns_and_assignments(capsys):
+    src = '''
+nama = "Ayu"
+baris = []
+tambah(baris, "Halo, {nama}")
+
+fungsi buat_pesan(total)
+    kembali "Total belanja: Rp{total}"
+akhir
+
+pesan = "Pembeli: {nama}"
+cetak baris[0]
+cetak buat_pesan(12000)
+cetak pesan
+'''
+    it = Interpreter()
+    it.run(src)
+    captured = capsys.readouterr()
+    assert "Halo, Ayu" in captured.out
+    assert "Total belanja: Rp12000" in captured.out
+    assert "Pembeli: Ayu" in captured.out
+
+def test_string_interpolation_can_escape_literal_braces(capsys):
+    src = '''
+nama = "Ayu"
+cetak "Halo, {nama}"
+cetak "Literal: {{nama}}"
+'''
+    it = Interpreter()
+    it.run(src)
+    captured = capsys.readouterr()
+    assert "Halo, Ayu" in captured.out
+    assert "Literal: {nama}" in captured.out
+
+def test_global_variables_readable_inside_functions(capsys):
+    src = '''
+PATH_DB = "data/db.json"
+
+fungsi muat()
+    kembali "Path: {PATH_DB}"
+akhir
+
+cetak muat()
+'''
+    it = Interpreter()
+    it.run(src)
+    captured = capsys.readouterr()
+    assert "Path: data/db.json" in captured.out
+
 def test_expression_keywords_do_not_change_string_literals(capsys):
     src = 'teks = ["direct dan indirect", "jawaban benar"]\ncetak teks[0]\ncetak teks[1]'
     it = Interpreter()
@@ -192,6 +275,21 @@ cetak pembantu.nama()
     assert "def __bm_pakai(path):" in py
     assert "pembantu = __bm_pakai('pembantu.bm')" in py
     assert "tidak didukung saat transpile" not in py
+
+def test_transpile_interpolates_strings_inside_calls():
+    src = '''
+nama = "Ayu"
+baris = []
+tambah(baris, "Halo, {nama}")
+cetak baris[0]
+'''
+    py = transpile_to_python(src)
+    assert 'tambah(baris, f"Halo, {nama}")' in py
+
+def test_transpile_keeps_escaped_interpolation_braces():
+    src = 'cetak "Literal: {{nama}}"'
+    py = transpile_to_python(src)
+    assert 'print("Literal: {{nama}}")' in py or 'print(f"Literal: {{nama}}")' in py
 
 def test_exception_handling_coba_tangkap_akhirnya(capsys):
     src = '''

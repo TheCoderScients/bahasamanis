@@ -33,6 +33,10 @@ Sudah dikerjakan:
 - Helper test tersedia: `pastikan`, `pastikan_sama`/`sama`, `pastikan_tidak_sama`/`tidak_sama`, `pastikan_benar`, dan `pastikan_salah`.
 - Contoh proyek besar mini tersedia di `examples/proyek_besar_mini`.
 - `bm bangun` sekarang bisa menghasilkan Python yang tetap dapat memakai modul BM lokal lewat `pakai`.
+- Parser mendukung daftar/kamus/argumen multi-baris, sehingga object besar tidak perlu dipaksa satu baris.
+- Interpolasi string `{nama}` berjalan di assignment, return value, argumen fungsi, daftar, dan kamus.
+- Variabel level atas dapat dibaca dari dalam fungsi, sehingga konfigurasi global sederhana lebih masuk akal.
+- `bm cek --ketat` mulai memeriksa sintaks ekspresi, bukan hanya bentuk blok dasar.
 
 Target utama:
 

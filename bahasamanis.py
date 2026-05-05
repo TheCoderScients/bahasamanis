@@ -162,6 +162,9 @@ def _interpolate_exprs(inner: str, env: Dict[str,Any]) -> str:
     """Interpolate {...} segments by safely evaluating each expression.
     Supports variables and expressions (including allowed function calls).
     """
+    open_token = "\uFFF0BM_OPEN_BRACE\uFFF0"
+    close_token = "\uFFF0BM_CLOSE_BRACE\uFFF0"
+    protected = inner.replace("{{", open_token).replace("}}", close_token)
     pattern = re.compile(r"{([^{}]+)}")
     def repl(m):
         expr = m.group(1)
@@ -177,7 +180,17 @@ def _interpolate_exprs(inner: str, env: Dict[str,Any]) -> str:
             return '{' + expr + '}'
         except Exception as e:
             raise BMError(f"Kesalahan interpolasi string: {_translate_error_message(str(e))}")
-    return pattern.sub(repl, inner)
+    return pattern.sub(repl, protected).replace(open_token, "{").replace(close_token, "}")
+
+class _InterpolateStringConstants(ast.NodeTransformer):
+    def __init__(self, env: Dict[str, Any]):
+        self.env = env
+
+    def visit_Constant(self, node: ast.Constant):
+        if isinstance(node.value, str) and "{" in node.value and "}" in node.value:
+            value = _interpolate_exprs(node.value, self.env)
+            return ast.copy_location(ast.Constant(value=value), node)
+        return node
 
 def safe_eval(expr: str, env: Dict[str,Any]):
     s = expr.strip()
@@ -193,6 +206,8 @@ def safe_eval(expr: str, env: Dict[str,Any]):
             # Evaluate expressions within {...} safely
             return _interpolate_exprs(inner, env)
         return inner
+    node = _InterpolateStringConstants(env).visit(node)
+    ast.fix_missing_locations(node)
     safe_globals = {"__builtins__": {"__import__": __import__}}
     return eval(compile(node, "<expr>", "eval"), safe_globals, env)
 
@@ -447,6 +462,59 @@ def _split_eq_outside_quotes(s:str):
             left=s[:i].strip(); right=s[i+1:].strip(); return left,right
     return s.strip(), None
 
+def _bracket_delta_outside_quotes(s: str) -> int:
+    depth = 0
+    inq = False
+    qchar = None
+    escaped = False
+    for ch in s:
+        if escaped:
+            escaped = False
+            continue
+        if ch == "\\" and inq:
+            escaped = True
+            continue
+        if ch in "\"'":
+            if inq and ch == qchar:
+                inq = False
+                qchar = None
+            elif not inq:
+                inq = True
+                qchar = ch
+            continue
+        if inq:
+            continue
+        if ch in "([{":
+            depth += 1
+        elif ch in ")]}":
+            depth -= 1
+    return depth
+
+def _logical_lines(raw_lines: List[str]) -> List[Tuple[int, str]]:
+    lines: List[Tuple[int, str]] = []
+    buffer: List[str] = []
+    start_line = 0
+    depth = 0
+    for idx, ln in enumerate(raw_lines, start=1):
+        stripped = _strip_inline_comment(ln).strip()
+        if not stripped:
+            continue
+        if not buffer:
+            start_line = idx
+        buffer.append(stripped)
+        depth += _bracket_delta_outside_quotes(stripped)
+        if depth <= 0:
+            lines.append((start_line, " ".join(buffer)))
+            buffer = []
+            start_line = 0
+            depth = 0
+    if buffer:
+        raise BMError(
+            f"Ekspresi multi-baris mulai baris {start_line} belum ditutup. "
+            "Pastikan pasangan (), [], atau {} sudah lengkap."
+        )
+    return lines
+
 def _strip_block_suffix(text: str) -> str:
     text = text.strip()
     for suffix in ("maka", "lakukan"):
@@ -488,11 +556,7 @@ def _normalize_friendly_prompt_expr(text: str) -> str:
 
 def parse_program(src:str):
     raw_lines = src.splitlines()
-    lines=[]
-    for idx,ln in enumerate(raw_lines, start=1):
-        s = _strip_inline_comment(ln).strip()
-        if not s or s.startswith("#"): continue
-        lines.append((idx,s))
+    lines = _logical_lines(raw_lines)
     i=0; n=len(lines)
     def is_elif_line(txt: str) -> bool:
         return txt.startswith("elif ") or txt.startswith("lain jika ")
@@ -738,6 +802,81 @@ def parse_program(src:str):
     i=0
     return parse_block()
 
+def _check_expr_for_lint(expr: Optional[str], lineno: int, warnings: List[Tuple[int, str]]):
+    if expr is None:
+        return
+    if expr in ("__BM__BREAK__", "__BM__CONTINUE__", "__BM__PASS__"):
+        return
+    try:
+        node = ast.parse(_expr_to_python(expr), mode="eval")
+        _check_ast_nodes(node)
+    except SyntaxError as e:
+        warnings.append((lineno, f"ekspresi belum valid: {_translate_error_message(str(e))}"))
+    except BMError as e:
+        warnings.append((lineno, str(e)))
+
+def lint_program(src: str) -> List[Tuple[int, str]]:
+    stmts = parse_program(src)
+    warnings: List[Tuple[int, str]] = []
+
+    def walk(stmt_list: List[Stmt]):
+        for stmt in stmt_list:
+            if isinstance(stmt, PrintStmt):
+                _check_expr_for_lint(stmt.expr, stmt.lineno, warnings)
+            elif isinstance(stmt, PromptInputStmt):
+                _check_expr_for_lint(stmt.prompt_expr, stmt.lineno, warnings)
+            elif isinstance(stmt, AssignStmt):
+                _check_expr_for_lint(stmt.expr, stmt.lineno, warnings)
+            elif isinstance(stmt, AwaitAssignStmt):
+                _check_expr_for_lint(stmt.expr, stmt.lineno, warnings)
+            elif isinstance(stmt, AwaitStmt):
+                _check_expr_for_lint(stmt.expr, stmt.lineno, warnings)
+            elif isinstance(stmt, ExprStmt):
+                _check_expr_for_lint(stmt.expr, stmt.lineno, warnings)
+            elif isinstance(stmt, ReturnStmt):
+                _check_expr_for_lint(stmt.expr, stmt.lineno, warnings)
+            elif isinstance(stmt, RaiseStmt):
+                _check_expr_for_lint(stmt.expr, stmt.lineno, warnings)
+            elif isinstance(stmt, IfStmt):
+                for cond, block in stmt.branches:
+                    _check_expr_for_lint(cond, stmt.lineno, warnings)
+                    walk(block)
+            elif isinstance(stmt, SwitchStmt):
+                _check_expr_for_lint(stmt.expr, stmt.lineno, warnings)
+                for case_expr, block in stmt.cases:
+                    _check_expr_for_lint(case_expr, stmt.lineno, warnings)
+                    walk(block)
+            elif isinstance(stmt, WhileStmt):
+                _check_expr_for_lint(stmt.cond, stmt.lineno, warnings)
+                walk(stmt.body)
+            elif isinstance(stmt, ForStmt):
+                _check_expr_for_lint(stmt.start, stmt.lineno, warnings)
+                _check_expr_for_lint(stmt.end, stmt.lineno, warnings)
+                walk(stmt.body)
+            elif isinstance(stmt, ForEachStmt):
+                _check_expr_for_lint(stmt.iterable, stmt.lineno, warnings)
+                walk(stmt.body)
+            elif isinstance(stmt, RepeatStmt):
+                _check_expr_for_lint(stmt.count, stmt.lineno, warnings)
+                walk(stmt.body)
+            elif isinstance(stmt, (FuncDef, AsyncFuncDef)):
+                for raw_arg in stmt.args:
+                    if "=" in raw_arg:
+                        _name, default_expr = raw_arg.split("=", 1)
+                        _check_expr_for_lint(default_expr.strip(), stmt.lineno, warnings)
+                walk(stmt.body)
+            elif isinstance(stmt, ClassDef):
+                walk(stmt.body)
+            elif isinstance(stmt, TryStmt):
+                walk(stmt.body)
+                if stmt.catch_body is not None:
+                    walk(stmt.catch_body)
+                if stmt.finally_body is not None:
+                    walk(stmt.finally_body)
+
+    walk(stmts)
+    return warnings
+
 # --- Interpreter core ---
 class Interpreter:
     def __init__(self, aman: bool = False, allow_imports: Optional[bool] = None, allow_file_access: Optional[bool] = None):
@@ -889,7 +1028,7 @@ class Interpreter:
     def run(self, src:str):
         top = self.load_program(src)
         try:
-            self._exec_block(top, {})
+            self._exec_block(top, self.globals)
         except BMError as e:
             raise
     def _await_value_sync(self, value):
@@ -1296,8 +1435,9 @@ class Interpreter:
         setattr(mod, '__file__', str(target))
         return mod
 
-def transpile_to_python(src:str) -> str:
+def transpile_to_python(src:str, base_path: Optional[str | Path] = None) -> str:
     stmts = parse_program(src)
+    source_base = Path(base_path).resolve() if base_path is not None else None
 
     def contains_bm_import(stmt_list: List[Stmt]) -> bool:
         for stmt in stmt_list:
@@ -1399,11 +1539,12 @@ def transpile_to_python(src:str) -> str:
     ]
     if needs_bm_loader:
         indonesian_aliases.extend([
+            f"__bm_base_path = Path({str(source_base)!r})" if source_base is not None else "__bm_base_path = Path.cwd()",
             "def __bm_pakai(path):",
             "    raw = Path(str(path))",
             "    def dengan_akhiran(p): return p if p.suffix == '.bm' else p.with_suffix('.bm')",
             "    folder_hasil = Path(__file__).resolve().parent",
-            "    dasar = [Path.cwd(), folder_hasil, *folder_hasil.parents]",
+            "    dasar = [__bm_base_path, Path.cwd(), folder_hasil, *folder_hasil.parents]",
             "    sudah = set()",
             "    for base in dasar:",
             "        for calon in (dengan_akhiran(base / raw), dengan_akhiran(base / 'src' / raw)):",
@@ -1414,9 +1555,13 @@ def transpile_to_python(src:str) -> str:
             "            if calon.exists():",
             "                interp = __BMInterpreter()",
             "                interp.base_path = calon.parent",
-            "                interp.search_paths = [calon.parent, base, base / 'src', Path.cwd(), folder_hasil]",
+            "                tambahan = [calon.parent, base, base / 'src', Path.cwd(), folder_hasil]",
+            "                interp.search_paths = list(dict.fromkeys([*interp.search_paths, *tambahan]))",
             "                return interp._import_bm_module(str(calon))",
             "    interp = __BMInterpreter()",
+            "    interp.base_path = __bm_base_path",
+            "    tambahan = [__bm_base_path, __bm_base_path / 'src', Path.cwd(), folder_hasil]",
+            "    interp.search_paths = list(dict.fromkeys([*interp.search_paths, *tambahan]))",
             "    return interp._import_bm_module(str(raw))",
         ])
     for alias in indonesian_aliases:
@@ -1430,26 +1575,55 @@ def transpile_to_python(src:str) -> str:
             for tok in tokenize.generate_tokens(io.StringIO(pyexpr).readline):
                 if tok.type == tokenize.NAME and tok.string == "ini":
                     tok = tokenize.TokenInfo(tok.type, "self", tok.start, tok.end, tok.line)
+                elif tok.type == tokenize.STRING:
+                    converted = string_token_to_fstring(tok.string)
+                    if converted != tok.string:
+                        tok = tokenize.TokenInfo(tok.type, converted, tok.start, tok.end, tok.line)
                 tokens.append(tok)
             return tokenize.untokenize(tokens)
         except Exception:
             return re.sub(r"\bini\b", "self", pyexpr)
+    def escape_fstring_text(text: str) -> str:
+        return (
+            text.replace("\\", "\\\\")
+            .replace('"', '\\"')
+            .replace("\n", "\\n")
+            .replace("\r", "\\r")
+            .replace("\t", "\\t")
+        )
+    def string_token_to_fstring(token_text: str) -> str:
+        try:
+            value = ast.literal_eval(token_text)
+        except Exception:
+            return token_text
+        if not isinstance(value, str) or "{" not in value or "}" not in value:
+            return token_text
+        pattern = re.compile(r"{([^{}]+)}")
+        open_token = "\uFFF0BM_OPEN_BRACE\uFFF0"
+        close_token = "\uFFF0BM_CLOSE_BRACE\uFFF0"
+        protected = value.replace("{{", open_token).replace("}}", close_token)
+        found = False
+
+        def repl(match):
+            nonlocal found
+            inside = match.group(1)
+            py_inside = expr_to_python_transpile(inside)
+            try:
+                ast.parse(py_inside, mode="eval")
+            except SyntaxError:
+                return "{{" + escape_fstring_text(inside) + "}}"
+            found = True
+            return "{" + py_inside + "}"
+
+        converted = pattern.sub(repl, protected).replace(open_token, "{{").replace(close_token, "}}")
+        if not found:
+            return token_text
+        return 'f"' + escape_fstring_text(converted) + '"'
     def emit_expr_py(expr: str) -> str:
         s = expr.strip()
         # If it's a quoted string, convert `{...}` parts using BM -> Python expr and emit as f-string
         if (s.startswith('"') and s.endswith('"')) or (s.startswith("'") and s.endswith("'")):
-            quote = s[0]
-            inner = s[1:-1]
-            if "{" not in inner or "}" not in inner:
-                return s
-            import re as _re
-            def _repl(m):
-                inside = m.group(1)
-                return '{' + expr_to_python_transpile(inside) + '}'
-            inner2 = _re.sub(r"{([^{}]+)}", _repl, inner)
-            # Always use double quotes in output for simplicity
-            py = f"f\"{inner2}\""
-            return py
+            return string_token_to_fstring(s)
         # Non-string expression
         return expr_to_python_transpile(expr)
     def emit_target_py(target: str) -> str:

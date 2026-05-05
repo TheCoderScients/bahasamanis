@@ -19,6 +19,7 @@ PyPI: https://pypi.org/project/bahasamanis/
 - [Roadmap Proyek Besar](docs/ROADMAP_PROYEK_BESAR.md)
 - [Format bm.toml](docs/BM_TOML.md)
 - [Stabilitas](docs/STABILITAS.md)
+- [Kesalahan Umum](docs/KESALAHAN_UMUM.md)
 - [Keamanan Playground](docs/KEAMANAN_PLAYGROUND.md)
 - [QA Release](docs/QA_RELEASE.md)
 - [Changelog](CHANGELOG.md)

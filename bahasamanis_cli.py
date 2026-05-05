@@ -21,7 +21,7 @@ import argparse
 import shutil
 import re
 from pathlib import Path
-from bahasamanis import __version__, Interpreter, parse_program, transpile_to_python
+from bahasamanis import __version__, Interpreter, lint_program, parse_program, transpile_to_python
 
 SKIP_DIRS = {'.git', '.hg', '.svn', '.venv', 'venv', '__pycache__', 'dist', 'build'}
 MAIN_FILE_NAMES = ('utama.bm', 'main.bm', 'app.bm', 'program.bm')
@@ -226,6 +226,7 @@ def strict_warnings(file: Path, src: str):
             warnings.append((lineno, 'pakai `lain jika`, bukan alias Inggris `elif`'))
         if re.search(r'\basync\b', code):
             warnings.append((lineno, 'pakai `asinkron`, bukan alias Inggris `async`'))
+    warnings.extend(lint_program(src))
     return warnings
 
 def keep_code_before_comment(line: str) -> str:
@@ -363,7 +364,7 @@ def cmd_transpile(path: str | None = None, out: str | None = None) -> int:
             path = str(inferred)
     with open(path, 'r', encoding='utf-8') as f:
         src = f.read()
-    py = transpile_to_python(src)
+    py = transpile_to_python(src, base_path=Path(path).resolve().parent)
     if out is None and project:
         root, config = project
         default_out = 'build/' + Path(path).with_suffix('.py').name
@@ -598,7 +599,7 @@ def cmd_build(path: str | None = None, out: str | None = None, strict: bool = Fa
     output_path = Path(out) if out else root / default_output
     output_path.parent.mkdir(parents=True, exist_ok=True)
     src = main_path.read_text(encoding='utf-8')
-    output_path.write_text(transpile_to_python(src), encoding='utf-8')
+    output_path.write_text(transpile_to_python(src, base_path=main_path.resolve().parent), encoding='utf-8')
     print(f"Bangun selesai -> {output_path}")
     print(f"Jalankan hasil: python {output_path}")
     return 0

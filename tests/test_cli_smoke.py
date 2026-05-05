@@ -168,6 +168,34 @@ def test_cli_cek_ketat_ignores_english_words_inside_strings(tmp_path):
     assert result.returncode == 0
     assert result.stderr == ""
 
+def test_cli_cek_ketat_checks_expression_syntax(tmp_path):
+    src = tmp_path / "ekspresi_rusak.bm"
+    src.write_text('nilai = 1 +\n', encoding="utf-8")
+    result = run_cli("cek", "--ketat", str(src))
+    assert result.returncode == 1
+    assert "ekspresi belum valid" in result.stderr
+
+def test_cli_cek_ketat_accepts_multiline_data_literals(tmp_path):
+    src = tmp_path / "data_rapi.bm"
+    src.write_text(
+        '\n'.join([
+            'data = {',
+            '    "nama": "Ayu",',
+            '    "umur": 17,',
+            '    "nilai": [',
+            '        90,',
+            '        95',
+            '    ]',
+            '}',
+            'cetak data["nama"]',
+            '',
+        ]),
+        encoding="utf-8",
+    )
+    result = run_cli("cek", "--ketat", str(src))
+    assert result.returncode == 0
+    assert "file BM valid (ketat)" in result.stdout
+
 def test_cli_bangun_uses_custom_output_from_bm_toml(tmp_path):
     app = tmp_path / "app_output"
     assert run_cli("buat", str(app)).returncode == 0

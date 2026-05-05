@@ -52,7 +52,7 @@ Bahasa Manis dianggap siap untuk proyek besar jika:
 
 - [x] Format `bm.toml` distabilkan.
 - [x] Field proyek wajib dan opsional terdokumentasi.
-- [ ] `pakai` mendukung import relatif proyek secara konsisten.
+- [x] `pakai` mendukung import relatif proyek secara konsisten.
 - [ ] `pakai` mendukung folder modul.
 - [ ] Namespace package ditentukan.
 - [ ] Resolusi modul punya pesan error yang jelas.
@@ -78,8 +78,8 @@ Bahasa Manis dianggap siap untuk proyek besar jika:
 ## Fase 4: Quality Tools
 
 - [ ] `bm format` untuk format kode otomatis.
-- [ ] `bm cek` mendeteksi sintaks berisiko, bukan hanya parse error.
-- [ ] Pesan warning punya saran perbaikan.
+- [x] `bm cek` mendeteksi sintaks berisiko, bukan hanya parse error.
+- [x] Pesan warning punya saran perbaikan.
 - [x] Test BM punya helper `pastikan`.
 - [x] Test BM punya helper `sama`, `tidak_sama`, `pastikan_benar`, dan `pastikan_salah`.
 - [ ] CI template tersedia.
@@ -114,6 +114,7 @@ Bahasa Manis dianggap siap untuk proyek besar jika:
 - [x] Panduan pemula tersedia.
 - [x] Roadmap stabilisasi tersedia.
 - [x] Roadmap proyek besar tersedia.
+- [x] Dokumentasi kesalahan umum tersedia.
 - [ ] Panduan membuat CLI app tersedia.
 - [ ] Panduan membuat automation tool tersedia.
 - [ ] Panduan membuat web API tersedia.
