@@ -56,6 +56,8 @@ Perintah CLI:
 - `bm buat nama_proyek`
 - `bm cek [path]`
 - `bm cek --ketat [path]`
+- `bm format [path]`
+- `bm format --cek [path]`
 - `bm tes [path]`
 - `bm bangun [path]`
 - `bm paket [path]`
@@ -74,6 +76,8 @@ bm info
 bm jalankan
 bm cek
 bm cek --ketat
+bm format --cek
+bm format
 bm tes
 bm ubah
 bm bangun
@@ -86,6 +90,7 @@ ke output bawaan, misalnya `build/utama.py`.
 `bm bangun` membaca file utama dari `bm.toml`, melakukan cek, lalu membuat output
 Python siap dijalankan.
 `bm paket` menampilkan modul BM dan paket Python yang dipakai proyek.
+`bm format` merapikan indentasi blok, spasi akhir, dan struktur literal multi-baris.
 
 Contoh proyek yang lebih besar tersedia di `examples/proyek_besar_mini`:
 

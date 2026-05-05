@@ -196,6 +196,42 @@ def test_cli_cek_ketat_accepts_multiline_data_literals(tmp_path):
     assert result.returncode == 0
     assert "file BM valid (ketat)" in result.stdout
 
+def test_cli_format_check_and_write(tmp_path):
+    src = tmp_path / "acak_indent.bm"
+    src.write_text(
+        '\n'.join([
+            'fungsi halo()',
+            'cetak "Halo"',
+            'akhir  ',
+            '',
+            'data = {',
+            '"nama": "Ayu",',
+            '"nilai": [',
+            '90',
+            ']',
+            '}',
+            '',
+        ]),
+        encoding="utf-8",
+    )
+
+    check = run_cli("format", "--cek", str(src))
+    assert check.returncode == 1
+    assert "PERLU FORMAT" in check.stderr
+    assert 'cetak "Halo"' in src.read_text(encoding="utf-8")
+
+    formatted = run_cli("format", str(src))
+    assert formatted.returncode == 0
+    text = src.read_text(encoding="utf-8")
+    assert '    cetak "Halo"' in text
+    assert '    "nama": "Ayu",' in text
+    assert '        90' in text
+    assert text.endswith('\n')
+
+    check_again = run_cli("format", "--cek", str(src))
+    assert check_again.returncode == 0
+    assert "sudah rapi" in check_again.stdout
+
 def test_cli_bangun_uses_custom_output_from_bm_toml(tmp_path):
     app = tmp_path / "app_output"
     assert run_cli("buat", str(app)).returncode == 0

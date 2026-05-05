@@ -77,7 +77,7 @@ Bahasa Manis dianggap siap untuk proyek besar jika:
 
 ## Fase 4: Quality Tools
 
-- [ ] `bm format` untuk format kode otomatis.
+- [x] `bm format` untuk format kode otomatis.
 - [x] `bm cek` mendeteksi sintaks berisiko, bukan hanya parse error.
 - [x] Pesan warning punya saran perbaikan.
 - [x] Test BM punya helper `pastikan`.

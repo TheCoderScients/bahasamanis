@@ -39,6 +39,7 @@ Checklist:
 - [x] Format `bm.toml` v1 terdokumentasi.
 - [x] `bm bangun` membuat output Python dari proyek.
 - [x] `bm paket` menampilkan modul BM dan paket Python yang dipakai proyek.
+- [x] `bm format` tersedia untuk format kode otomatis dasar.
 - [x] Modul standar `env`, `log`, dan `csv` tersedia.
 - [x] Helper test `pastikan`, `sama`, dan `tidak_sama` tersedia.
 - [x] Contoh proyek besar mini tersedia dan masuk test CLI.
@@ -71,7 +72,7 @@ Kriteria:
 
 Ide yang boleh dieksplorasi setelah fondasi stabil:
 
-- Formatter `.bm`.
+- Formatter `.bm` lanjutan dan integrasi editor.
 - Linter pesan ramah pemula.
 - Paket standar yang lebih kaya.
 - Dokumentasi website khusus.

@@ -75,9 +75,13 @@ Mode ketat sekarang memeriksa:
 Gunakan sebelum menjalankan atau commit:
 
 ```bash
+bm format --cek
 bm cek --ketat
 bm tes
 ```
+
+Jika `bm format --cek` gagal, jalankan `bm format` untuk merapikan indentasi
+blok, spasi akhir, dan literal multi-baris.
 
 ## Program Interaktif
 

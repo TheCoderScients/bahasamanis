@@ -9,6 +9,7 @@ Perintah:
   bm interaktif
   bm buat nama_proyek
   bm cek [path]
+  bm format [path]
   bm tes [path]
   bm bangun [path]
   bm paket [path]
@@ -228,6 +229,107 @@ def strict_warnings(file: Path, src: str):
             warnings.append((lineno, 'pakai `asinkron`, bukan alias Inggris `async`'))
     warnings.extend(lint_program(src))
     return warnings
+
+def bracket_delta_outside_quotes(text: str) -> int:
+    depth = 0
+    inq = False
+    quote = ''
+    escaped = False
+    for ch in text:
+        if escaped:
+            escaped = False
+            continue
+        if ch == '\\' and inq:
+            escaped = True
+            continue
+        if ch in "\"'":
+            if inq and ch == quote:
+                inq = False
+                quote = ''
+            elif not inq:
+                inq = True
+                quote = ch
+            continue
+        if inq:
+            continue
+        if ch in '([{':
+            depth += 1
+        elif ch in ')]}':
+            depth -= 1
+    return depth
+
+def leading_closing_brackets(text: str) -> int:
+    count = 0
+    for ch in text.lstrip():
+        if ch in ')]}':
+            count += 1
+            continue
+        break
+    return count
+
+def is_block_opener(line: str) -> bool:
+    return (
+        line.startswith('fungsi ')
+        or line.startswith('fungsi asinkron ')
+        or line.startswith('fungsi async ')
+        or line.startswith('asinkron fungsi ')
+        or line.startswith('async fungsi ')
+        or line.startswith('kelas ')
+        or line == 'coba'
+        or line == 'coba maka'
+        or line.startswith('jika ')
+        or line.startswith('pilih ')
+        or line.startswith('selama ')
+        or line.startswith('untuk ')
+        or line.startswith('setiap ')
+        or line.startswith('ulangi ')
+    )
+
+def is_block_separator(line: str) -> bool:
+    return (
+        line == 'lain'
+        or line.startswith('lain jika ')
+        or line.startswith('elif ')
+        or line.startswith('saat ')
+        or line == 'bawaan'
+        or line.startswith('tangkap')
+        or line == 'akhirnya'
+    )
+
+def format_bm_source(src: str, indent_text: str = '    ') -> str:
+    out: list[str] = []
+    block_depth = 0
+    bracket_depth = 0
+    previous_blank = False
+    for raw in src.splitlines():
+        line = raw.rstrip()
+        stripped = line.strip()
+        if not stripped:
+            if out and not previous_blank:
+                out.append('')
+                previous_blank = True
+            continue
+        previous_blank = False
+        code = strip_comment(stripped).strip()
+        is_top_level = bracket_depth == 0
+        current_block_depth = block_depth
+        if is_top_level and (code == 'akhir' or is_block_separator(code)):
+            current_block_depth = max(current_block_depth - 1, 0)
+        bracket_offset = 0
+        if bracket_depth > 0:
+            bracket_offset = max(bracket_depth - leading_closing_brackets(stripped), 0)
+        out.append(f"{indent_text * (current_block_depth + bracket_offset)}{stripped}")
+        if is_top_level:
+            if code == 'akhir':
+                block_depth = current_block_depth
+            elif is_block_separator(code):
+                block_depth = current_block_depth + 1
+            elif is_block_opener(code):
+                block_depth = current_block_depth + 1
+        bracket_depth = max(bracket_depth + bracket_delta_outside_quotes(stripped), 0)
+    while out and out[-1] == '':
+        out.pop()
+    return '\n'.join(out) + ('\n' if out else '')
 
 def keep_code_before_comment(line: str) -> str:
     out = []
@@ -510,6 +612,52 @@ def cmd_check(path: str | None = None, strict: bool = False) -> int:
     print(f"{len(files)} file BM valid ({mode}).")
     return 0
 
+def cmd_format(path: str | None = None, check_only: bool = False) -> int:
+    project = load_project()
+    if path:
+        target = Path(path)
+    elif project:
+        root, config = project
+        if not print_project_config_notes(root, config):
+            return 1
+        target = root / project_value(config, 'cek', 'path', '.')
+    else:
+        target = Path('.')
+    files = iter_bm_files(target)
+    if not files:
+        print(f"[Error] Tidak ada file .bm di '{target}'.", file=sys.stderr)
+        return 1
+    changed = 0
+    failed = 0
+    for file in files:
+        try:
+            original = file.read_text(encoding='utf-8')
+            formatted = format_bm_source(original)
+        except Exception as e:
+            failed += 1
+            print(f"ERR {file}: {e}", file=sys.stderr)
+            continue
+        if formatted != original:
+            changed += 1
+            if check_only:
+                print(f"PERLU FORMAT {file}", file=sys.stderr)
+            else:
+                file.write_text(formatted, encoding='utf-8')
+                print(f"FORMAT {file}")
+        else:
+            print(f"RAPI {file}")
+    if failed:
+        print(f"{failed} file gagal diformat.", file=sys.stderr)
+        return 1
+    if check_only and changed:
+        print(f"{changed} file belum rapi. Jalankan `bm format {target}`.", file=sys.stderr)
+        return 1
+    if check_only:
+        print(f"{len(files)} file BM sudah rapi.")
+    else:
+        print(f"Format selesai: {changed} file diubah, {len(files) - changed} sudah rapi.")
+    return 0
+
 def cmd_test(path: str | None = None) -> int:
     project = load_project()
     if path:
@@ -774,11 +922,12 @@ def cmd_diagnose():
 def main(argv: list[str] | None = None):
     parser = argparse.ArgumentParser(prog='bm', description='BahasaManis CLI')
     parser.add_argument('--version', action='version', version=f'Bahasa Manis {__version__}')
-    parser.add_argument('action', choices=['jalankan','ubah','interaktif','versi','diagnosa','buat','bikin','cek','tes','bangun','paket','bersih','info','run','transpile','repl','diagnose','new','check','test','build','package','packages','deps','clean'], help='aksi: jalankan, ubah, buat, cek, tes, bangun, paket, bersih, info, interaktif, versi, atau diagnosa')
+    parser.add_argument('action', choices=['jalankan','ubah','interaktif','versi','diagnosa','buat','bikin','cek','format','fmt','tes','bangun','paket','bersih','info','run','transpile','repl','diagnose','new','check','test','build','package','packages','deps','clean'], help='aksi: jalankan, ubah, buat, cek, format, tes, bangun, paket, bersih, info, interaktif, versi, atau diagnosa')
     parser.add_argument('file', nargs='?', help='file sumber .bm')
     parser.add_argument('--out','-o', help='file hasil Python untuk perintah ubah')
     parser.add_argument('--template', default='cli', help='template untuk perintah buat (default: cli)')
     parser.add_argument('--ketat', '--strict', action='store_true', help='mode cek ketat untuk CI')
+    parser.add_argument('--cek', '--cek-saja', '--check-format', action='store_true', dest='format_check', help='untuk bm format: cek saja tanpa menulis file')
     args = parser.parse_intermixed_args(argv)
     act = args.action
     if act in ('run','jalankan'):
@@ -791,6 +940,8 @@ def main(argv: list[str] | None = None):
         return cmd_create(args.file, args.template)
     elif act in ('cek','check'):
         return cmd_check(args.file, args.ketat)
+    elif act in ('format','fmt'):
+        return cmd_format(args.file, args.format_check)
     elif act in ('tes','test'):
         return cmd_test(args.file)
     elif act in ('bangun','build'):

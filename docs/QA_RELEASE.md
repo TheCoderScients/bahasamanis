@@ -47,6 +47,7 @@ tmpdir=$(mktemp -d)
 cd "$tmpdir"
 bm buat qa_bangun
 cd qa_bangun
+bm format --cek
 bm paket
 bm bangun
 python build/utama.py

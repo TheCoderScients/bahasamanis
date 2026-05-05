@@ -37,6 +37,7 @@ Sudah dikerjakan:
 - Interpolasi string `{nama}` berjalan di assignment, return value, argumen fungsi, daftar, dan kamus.
 - Variabel level atas dapat dibaca dari dalam fungsi, sehingga konfigurasi global sederhana lebih masuk akal.
 - `bm cek --ketat` mulai memeriksa sintaks ekspresi, bukan hanya bentuk blok dasar.
+- `bm format` tersedia untuk merapikan indentasi, spasi akhir, dan literal multi-baris secara konservatif.
 
 Target utama:
 
